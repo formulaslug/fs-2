@@ -4,7 +4,7 @@ This defines the CAN specifications for the BMS.
 
 | ID     | Byte_0                | Byte_1                 | Byte_2                | Byte_3                 | Byte_4                | Byte_5                 | Byte_6                | Byte_7                 | Comments  |
 |--------|-----------------------|------------------------|-----------------------|------------------------|-----------------------|------------------------|-----------------------|------------------------|-----------|
-| 0x0420 | 'S'                   | 'P'                    | 'I'                   | 'C'                    | 'Y'                   | 'B'                    | 'O'                   | 'I'                    | I HATE U  |
+| 0x0420 | 'S'                   | 'P'                    | 'I'                   | 'C'                    | 'Y'                   | 'B'                    | 'O'                   | 'I'                    |           |
 | 0x0421 | Contractor State      | Fault State            | Warning State         | SoC                    | DoD [0:7]             | DoD [8:15]             | Total Current [0:7]   | Total Current [8:15]   |           |
 | 0x0422 | Total Voltage [0:7]   | Total Voltage [8:15]   | Max Voltage [0:7]     | Max Voltage [8:15]     | Min Voltage [0:7]     | Min Voltage [8:15]     | Max Temp              | Min Temp               |           |
 | 0x0423 | Voltage Cell 1 [0:7]  | Voltage Cell 1 [8:15]  | Voltage Cell 2 [0:7]  | Voltage Cell 2 [8:15]  | Voltage Cell 3 [0:7]  | Voltage Cell 3 [8:15]  | Voltage Cell 4 [0:7]  | Voltage Cell 4 [8:15]  |           |

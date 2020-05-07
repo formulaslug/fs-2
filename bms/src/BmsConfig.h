@@ -2,59 +2,163 @@
 
 #include "mbed.h"
 
+
+// Global pointer to serial object
+//
+// This allows for all files to access the serial output
 extern Serial* serial;
 
-// TODO: So there's an issue here.
 
+//
 // BMS Master Configuration
+//
 
-#define BMS_BANK_COUNT 1
+// Number of LTC6811 battery banks to communicate with
+#ifndef BMS_BANK_COUNT
+#define BMS_BANK_COUNT 4
+#endif
+
+// Number of cell voltage readings per LTC6811
+#ifndef BMS_BANK_CELL_COUNT
 #define BMS_BANK_CELL_COUNT 7
+#endif
+
+// Number of cell temperature readings per LTC6811
+#ifndef BMS_BANK_TEMP_COUNT
 #define BMS_BANK_TEMP_COUNT BMS_BANK_CELL_COUNT
+#endif
 
+// Upper threshold when fault will be thrown for cell temperature
+//
+// Units: degrees celcius
+#ifndef BMS_FAULT_TEMP_THRESHOLD_HIGH
 #define BMS_FAULT_TEMP_THRESHOLD_HIGH 55
-#define BMS_FAULT_TEMP_THRESHOLD_LOW 0
+#endif
 
-// Threshold when fault will be thrown for cell voltage
+// Upper threshold when fault will be thrown for cell temperature
+//
+// Units: degrees celcius
+#ifndef BMS_FAULT_TEMP_THRESHOLD_LOW
+#define BMS_FAULT_TEMP_THRESHOLD_LOW 0
+#endif
+
+// Upper threshold when fault will be thrown for cell voltage
 //
 // Units: millivolts
+#ifndef BMS_FAULT_VOLTAGE_THRESHOLD_HIGH
 #define BMS_FAULT_VOLTAGE_THRESHOLD_HIGH 4200
+#endif
+
+// Lower threshold when fault will be thrown for cell voltage
+//
+// Units: millivolts
+#ifndef BMS_FAULT_VOLTAGE_THRESHOLD_LOW
 #define BMS_FAULT_VOLTAGE_THRESHOLD_LOW 2550
+#endif
 
 // Threshold when cells will be discharged when discharging is enabled.
 //
 // Units: millivolts
+#ifndef BMS_DISCHARGE_THRESHOLD
 #define BMS_DISCHARGE_THRESHOLD 15
-
-// IO Configuration
-
-/*
-#define LINE_BMS_FLT PAL_LINE(GPIOB, 0)
-#define LINE_BMS_FLT_LAT PAL_LINE(GPIOF, 1)
-#define LINE_IMD_STATUS PAL_LINE(GPIOF, 0)
-#define LINE_IMD_FLT_LAT PAL_LINE(GPIOA, 8)
-#define LINE_CHARGER_CONTROL PAL_LINE(GPIOB, 1)
-#define LINE_SIG_CURRENT LINE_ARD_A0 // => (GPIOA, 0)
-
-// SPI Configuration
-
-#define BMS_SPI_DRIVER SPID1
-#define BMS_SPI_CR1 (SPI_CR1_BR_2 | SPI_CR1_BR_1)  // Prescalar of 128
-#define BMS_SPI_CR2 (SPI_CR2_DS_2 | SPI_CR2_DS_1 | SPI_CR2_DS_0)  // 8 bits data
-
-#define LINE_SPI_MOSI PAL_LINE(GPIOA, 7)
-#define LINE_SPI_MISO PAL_LINE(GPIOA, 6)
-#define LINE_SPI_SCLK PAL_LINE(GPIOA, 5)
-#define LINE_SPI_SSEL PAL_LINE(GPIOA, 4)
-
-// CAN Configuration
-#define BMS_CAN_DRIVER CAND1
-#define BMS_CAN_CR1 CAN_MCR_ABOM | CAN_MCR_AWUM | CAN_MCR_TXFP
-#define BMS_CAN_CR2 CAN_BTR_SJW(1) | CAN_BTR_TS1(5) | CAN_BTR_TS2(0) | CAN_BTR_BRP(2)
-
-#define LINE_CAN_TX PAL_LINE(GPIOA, 12)
-#define LINE_CAN_RX PAL_LINE(GPIOA, 11)
-*/
+#endif
 
 // BMS Cell lookup
+//
+// This defines the mapping from LTC6811 pins to cell indicies.
+// Values of -1 indicate the pin is not connected.
 const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
+
+
+//
+// IO Configuration
+//
+
+// BMS fault line
+//
+// To be set high and held high when software enters fault state
+#ifndef BMS_PIN_BMS_FLT
+#define BMS_PIN_BMS_FLT NC
+#endif
+
+// BMS fault latch
+//
+// Readback from BMS fault relay to be broadcasted on CAN bus
+#ifndef BMS_PIN_BMS_FLT_LAT
+#define BMS_PIN_BMS_FLT_LAT NC
+#endif
+
+// IMD status input
+//
+// Reads PWM output from IMD board
+#ifndef BMS_PIN_IMD_STATUS
+#define BMS_PIN_IMD_STATUS NC
+#endif
+
+// IMD fault latch
+//
+// Readback from IMD fault relay to be broadcasted on CAN bus
+#ifndef BMS_PIN_IMD_FLT_LAT
+#define BMS_PIN_IMD_FLT_LAT NC
+#endif
+
+// Charger output
+//
+// To be pulled high to enable charger
+#ifndef BMS_PIN_CHARGER_CONTROL
+#define BMS_PIN_CHARGER_CONTROL NC
+#endif
+
+// Current input
+//
+// Input from analog current sensor
+#ifndef BMS_PIN_SIG_CURRENT
+#define BMS_PIN_SIG_CURRENT NC
+#endif
+
+
+//
+// SPI Configuration
+//
+
+// SPI master out slave in
+#ifndef BMS_PIN_SPI_MOSI
+#define BMS_PIN_SPI_MOSI p5
+#endif
+
+// SPI master in slave out
+#ifndef BMS_PIN_SPI_MISO
+#define BMS_PIN_SPI_MISO p6
+#endif
+
+// SPI clock
+#ifndef BMS_PIN_SPI_SCLK
+#define BMS_PIN_SPI_SCLK p7
+#endif
+
+// SPI chip select
+#ifndef BMS_PIN_SPI_SSEL
+#define BMS_PIN_SPI_SSEL p8
+#endif
+
+
+//
+// CAN Configuration
+//
+
+// CAN TX pin to transceiver
+#ifndef BMS_PIN_CAN_TX
+#define BMS_PIN_CAN_TX p29
+#endif
+
+// CAN RX pin from transceiver
+#ifndef BMS_PIN_CAN_RX
+#define BMS_PIN_CAN_RX p30
+#endif
+
+// CAN frequency to used
+// default: 500k
+#ifndef BMS_CAN_FREQUENCY
+#define BMS_CAN_FREQUENCY 500000
+#endif
+

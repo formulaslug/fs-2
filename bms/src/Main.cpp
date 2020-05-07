@@ -59,7 +59,11 @@ int main() {
 
   ThisThread::sleep_for(1000);
 
-  SPI* spiDriver = new SPI(p5,p6,p7,p8,use_gpio_ssel);
+  SPI* spiDriver = new SPI(BMS_PIN_SPI_MOSI,
+                           BMS_PIN_SPI_MISO,
+                           BMS_PIN_SPI_SCLK,
+                           BMS_PIN_SPI_SSEL,
+                           use_gpio_ssel);
   spiDriver->format(8, 0);
   LTC6811Bus ltcBus = LTC6811Bus(spiDriver);
 

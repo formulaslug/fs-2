@@ -202,23 +202,17 @@ class BMSThread {
         serial->printf("Current: %d\n", gCurrent);
         canTransmit(&BMS_CAN_DRIVER, CAN_ANY_MAILBOX, &txmsg, TIME_MS2I(100));
       }
-      {
-        auto txmsg = BMSStatMessage(allBanksVoltage / 10, maxVoltage,
-                                    minVoltage, maxTemp, minTemp);
-        canTransmit(&BMS_CAN_DRIVER, CAN_ANY_MAILBOX, &txmsg, TIME_MS2I(100));
-      }
-
+      */
+      canBus->write(BMSStatMessage(allBanksVoltage / 10, maxVoltage, minVoltage, maxTemp, minTemp));
+      
       // Send CAN
       for (size_t i = 0; i < BMS_BANK_COUNT; i++) {
-        auto txmsg = BMSTempMessage(i, allTemps + (BMS_BANK_TEMP_COUNT * i));
-        canTransmit(&BMS_CAN_DRIVER, CAN_ANY_MAILBOX, &txmsg, TIME_MS2I(100));
+        canBus->write(BMSTempMessage(i, allTemps + (BMS_BANK_TEMP_COUNT * i)));
       }
 
       for (size_t i = 0; i < 7; i++) {
-        auto txmsg = BMSVoltageMessage(i, allVoltages + (4 * i));
-        canTransmit(&BMS_CAN_DRIVER, CAN_ANY_MAILBOX, &txmsg, TIME_MS2I(100));
+        canBus->write(BMSVoltageMessage(i, allVoltages + (4 * i)));
       }
-      */
 
       // Compute time elapsed since beginning of measurements and sleep for
       // m_delay accounting for elapsed time

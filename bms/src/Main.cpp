@@ -1,6 +1,6 @@
 #include "BmsConfig.h"
-//#include "CanOpenPdo.h"
 //#include "common.h"
+#include "Can.h"
 
 #include "mbed.h"
 #include "rtos.h"
@@ -33,6 +33,7 @@
 //    CANOptions::config<CANOptions::BaudRate::k500k, false>();
 
 Serial* serial;
+CAN* canBus;
 
 void initIO();
 
@@ -40,22 +41,7 @@ int main() {
   // Init all io pins
   initIO();
   
-  /*
-  canStart(&BMS_CAN_DRIVER, &cancfg);
-  CANTxFrame txmsg;
-  txmsg.IDE = CAN_IDE_STD;
-  txmsg.RTR = CAN_RTR_DATA;
-  txmsg.SID = kFuncIdCellStartup;
-  txmsg.DLC = 8;
-  uint8_t msg[8] = {'S', 'P', 'I', 'C', 'Y', 'B', 'O', 'I'};
-  for (size_t i = 0; i < 8; i++) {
-    txmsg.data8[i] = msg[i];
-  }
-  if (canTransmit(&BMS_CAN_DRIVER, CAN_ANY_MAILBOX, &txmsg, TIME_MS2I(100)) !=
-      MSG_OK) {
-    sdWrite(&SD2, (const uint8_t*)"Can startup failed\r\n", 20);
-  }
-  */
+  canBus->write(BMSCellStartup());
 
   ThisThread::sleep_for(1000);
 
@@ -89,6 +75,8 @@ void initIO() {
   serial = new Serial(USBTX, USBRX);
   serial->printf("INIT\n");
   
+  canBus = new CAN(BMS_PIN_CAN_TX, BMS_PIN_CAN_RX, BMS_CAN_FREQUENCY);  
+
   // Set modes for IO
   /*
   palSetLineMode(LINE_BMS_FLT, PAL_MODE_OUTPUT_PUSHPULL);
@@ -117,8 +105,4 @@ void initIO() {
   palSetLineMode(LINE_SPI_SSEL,
                  PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_HIGHEST);
   */
-
-  // Set modes for CAN
-  //palSetLineMode(LINE_CAN_TX, PAL_MODE_ALTERNATE(9) | PAL_STM32_OSPEED_HIGHEST);
-  //palSetLineMode(LINE_CAN_RX, PAL_MODE_ALTERNATE(9));
 }

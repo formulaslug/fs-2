@@ -11,6 +11,7 @@
 #include "EnergusTempSensor.h"
 #include "LTC6811.h"
 #include "LTC6811Bus.h"
+#include "Can.h"
 
 class BMSThread {
  public:

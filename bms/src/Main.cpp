@@ -29,8 +29,6 @@
 // * Failed init
 // * Comm fail
 
-//static constexpr CANConfig cancfg =
-//    CANOptions::config<CANOptions::BaudRate::k500k, false>();
 
 Serial* serial;
 CAN* canBus;

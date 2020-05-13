@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    container: mbedos/mbed-os-env:stable
+
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    # Install dependencies for all projects
+    - name: Install dependencies
+      run: find . -maxdepth 2 -name 'mbed_app.json' -exec sh -c "cd $(dirname '{}') && mbed update" \;
+
+    # Compile all projects
+    - name: Compile
+      run: find . -maxdepth 2 -name 'mbed_app.json' -exec sh -c "cd $(dirname '{}') && mbed update" \;

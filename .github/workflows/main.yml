@@ -21,6 +21,7 @@ jobs:
 
     # Install dependencies for all projects
     - name: Install dependencies
+      shell: bash
       run: |
         for PROJECT in $PROJECTS; do
           pushd $PROJECT
@@ -30,6 +31,7 @@ jobs:
 
     # Compile all projects
     - name: Compile
+      shell: bash
       run: |
         for PROJECT in $PROJECTS; do
           pushd $PROJECT

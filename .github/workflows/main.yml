@@ -11,14 +11,28 @@ jobs:
     runs-on: ubuntu-latest
     container: mbedos/mbed-os-env:stable
 
+    env:
+      # The list of projects to run on. This should just run for each dir that includes a mbed_app.json
+      PROJECTS: bms fakedir
+
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
 
     # Install dependencies for all projects
     - name: Install dependencies
-      run: find . -maxdepth 2 -name 'mbed_app.json' -exec sh -c "cd $(dirname '{}') && mbed update" \;
+      run: |
+        for PROJECT in $PROJECTS; do
+          pushd $PROJECT
+          mbed deploy
+          popd
+        done
 
     # Compile all projects
     - name: Compile
-      run: find . -maxdepth 2 -name 'mbed_app.json' -exec sh -c "cd $(dirname '{}') && mbed update" \;
+      run: |
+        for PROJECT in $PROJECTS; do
+          pushd $PROJECT
+          mbed compile
+          popd
+        done

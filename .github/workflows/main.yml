@@ -13,7 +13,7 @@ jobs:
 
     env:
       # The list of projects to run on. This should just run for each dir that includes a mbed_app.json
-      PROJECTS: bms fakedir
+      PROJECTS: bms
 
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it

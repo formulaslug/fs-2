@@ -17,7 +17,7 @@ CANMessage BMSCellStartup () {
 }
 
 CANMessage BMSFaultStatus (uint8_t contactorState, uint8_t faultState, uint8_t warningState, uint8_t SoC, uint16_t DoD, uint16_t totalCurrent) {
-  const unsigned char data[8];
+  unsigned char data[8];
   data[0] = contactorState;
   data[1] = faultState;
   data[2] = warningState;
@@ -30,7 +30,7 @@ CANMessage BMSFaultStatus (uint8_t contactorState, uint8_t faultState, uint8_t w
 }
 
 CANMessage BMSStatus (uint16_t totalVoltage, uint16_t maxVoltage, uint16_t minVoltage, uint8_t maxTemp, uint8_t minTemp) {
-  const unsigned char data[8];
+  unsigned char data[8];
   data[0] = totalVoltage >> 8;
   data[1] = totalVoltage;
   data[2] = maxVoltage >> 8;
@@ -43,7 +43,7 @@ CANMessage BMSStatus (uint16_t totalVoltage, uint16_t maxVoltage, uint16_t minVo
 }
 
 CANMessage BMSCellVoltage (uint8_t row, uint16_t * voltages) {
-  const unsigned char data[8];
+  unsigned char data[8];
   for (int i = 0; i < 8; i += 2) {
     data[i] = voltages[i/2] >> 8;
     data[++i] = voltages [i/2];
@@ -52,7 +52,7 @@ CANMessage BMSCellVoltage (uint8_t row, uint16_t * voltages) {
 }
 
 CANMessage BMSCellTemp (uint8_t row, uint8_t * temps) {
-  const unsigned char data[7];
+  unsigned char data[7];
   for (int i = 0; i < 7; i++) {
     data[i] = temps[i];
   }

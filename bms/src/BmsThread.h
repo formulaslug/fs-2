@@ -12,6 +12,7 @@
 #include "LTC6811.h"
 #include "LTC6811Bus.h"
 #include "Can.h"
+#include <array>
 
 class BMSThread {
  public:

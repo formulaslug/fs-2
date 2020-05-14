@@ -1,7 +1,7 @@
 #include "LTC6811Bus.h"
 
 // TODO: stdout should not be in this header
-#include "BmsThread.h"
+#include "BmsConfig.h"
 
 #include "mbed.h"
 

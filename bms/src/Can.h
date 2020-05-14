@@ -29,7 +29,7 @@ CANMessage BMSFaultStatus (uint8_t contactorState, uint8_t faultState, uint8_t w
   return CANMessage(kFuncIdFaultStatus, data);
 }
 
-CANMessage BMSStatus (uint16_t totalVoltage, uint16_t maxVoltage, uint16_t minVoltage, uint8_t maxTemp, uint8_t minTemp) {
+CANMessage BMSStatMessage (uint16_t totalVoltage, uint16_t maxVoltage, uint16_t minVoltage, uint8_t maxTemp, uint8_t minTemp) {
   unsigned char data[8];
   data[0] = totalVoltage >> 8;
   data[1] = totalVoltage;
@@ -42,7 +42,7 @@ CANMessage BMSStatus (uint16_t totalVoltage, uint16_t maxVoltage, uint16_t minVo
   return CANMessage(kFuncIdBmsStat, data);
 }
 
-CANMessage BMSCellVoltage (uint8_t row, uint16_t * voltages) {
+CANMessage BMSVoltageMessage (uint8_t row, uint16_t * voltages) {
   unsigned char data[8];
   for (int i = 0; i < 8; i += 2) {
     data[i] = voltages[i/2] >> 8;
@@ -51,10 +51,10 @@ CANMessage BMSCellVoltage (uint8_t row, uint16_t * voltages) {
   return CANMessage(kFuncIdCellVoltage[row], data);
 }
 
-CANMessage BMSCellTemp (uint8_t row, uint8_t * temps) {
+CANMessage BMSTempMessage (uint8_t row, uint8_t * temps) {
   unsigned char data[7];
   for (int i = 0; i < 7; i++) {
     data[i] = temps[i];
   }
-  return CANMessage(kFunIdCellTempAdc[row], data, 7);
+  return CANMessage(kFuncIdCellTempAdc[row], data, 7);
 }

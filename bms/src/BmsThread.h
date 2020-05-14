@@ -46,7 +46,7 @@ class BMSThread {
   }
   void threadWorker() {
     uint16_t* allVoltages = new uint16_t[BMS_BANK_COUNT * BMS_BANK_CELL_COUNT];
-    tl::optional<int8_t>* allTemps = new tl::optional<int8_t>[BMS_BANK_COUNT * BMS_BANK_CELL_COUNT];
+    auto allTemps = std::array<tl::optional<int8_t>, BMS_BANK_COUNT * BMS_BANK_CELL_COUNT>();
     uint16_t averageVoltage = -1;
     uint16_t prevMinVoltage = -1;
 
@@ -201,7 +201,12 @@ class BMSThread {
       
       // Send CAN
       for (size_t i = 0; i < BMS_BANK_COUNT; i++) {
-        canBus->write(BMSTempMessage(i, allTemps + (BMS_BANK_TEMP_COUNT * i)));
+        auto temps = std::array<int8_t, BMS_BANK_TEMP_COUNT>();
+        std::transform(allTemps.begin() + (BMS_BANK_TEMP_COUNT * i),
+                       allTemps.begin() + (BMS_BANK_TEMP_COUNT * (i + 1)),
+                       temps.begin(),
+                       [](tl::optional<int8_t> t) { return t.value_or(-127); });
+        canBus->write(BMSTempMessage(i, (uint8_t*)temps.data()));
       }
 
       for (size_t i = 0; i < 7; i++) {

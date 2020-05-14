@@ -197,13 +197,6 @@ class BMSThread {
           serial->printf("\n");
       }
 
-      /*
-      {
-	auto txmsg = BMSFaultMessage(gCurrent);
-        serial->printf("Current: %d\n", gCurrent);
-        canTransmit(&BMS_CAN_DRIVER, CAN_ANY_MAILBOX, &txmsg, TIME_MS2I(100));
-      }
-      */
       canBus->write(BMSStatMessage(allBanksVoltage / 10, maxVoltage, minVoltage, maxTemp, minTemp));
       
       // Send CAN

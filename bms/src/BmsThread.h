@@ -201,11 +201,13 @@ class BMSThread {
       
       // Send CAN
       for (size_t i = 0; i < BMS_BANK_COUNT; i++) {
+        // Convert from optional temp values to values with default of -127 (to indicate error)
         auto temps = std::array<int8_t, BMS_BANK_TEMP_COUNT>();
         std::transform(allTemps.begin() + (BMS_BANK_TEMP_COUNT * i),
                        allTemps.begin() + (BMS_BANK_TEMP_COUNT * (i + 1)),
                        temps.begin(),
                        [](tl::optional<int8_t> t) { return t.value_or(-127); });
+
         canBus->write(BMSTempMessage(i, (uint8_t*)temps.data()));
       }
 

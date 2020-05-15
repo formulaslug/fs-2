@@ -3,6 +3,7 @@
 #include <array>
 #include <initializer_list>
 #include <vector>
+#include <algorithm>
 
 #include "mbed.h"
 #include "rtos.h"

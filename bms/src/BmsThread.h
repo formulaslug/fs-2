@@ -1,18 +1,18 @@
 #pragma once
 
+#include <array>
 #include <initializer_list>
 #include <vector>
-#include "tl/optional.hpp"
 
 #include "mbed.h"
 #include "rtos.h"
+#include "tl/optional.hpp"
 
 #include "BmsConfig.h"
+#include "Can.h"
 #include "EnergusTempSensor.h"
 #include "LTC6811.h"
 #include "LTC6811Bus.h"
-#include "Can.h"
-#include <array>
 
 class BMSThread {
  public:

@@ -73,7 +73,7 @@ void initIO() {
   serial = new Serial(USBTX, USBRX);
   serial->printf("INIT\n");
   
-  canBus = new CAN(BMS_PIN_CAN_TX, BMS_PIN_CAN_RX, BMS_CAN_FREQUENCY);  
+  canBus = new CAN(BMS_PIN_CAN_RX, BMS_PIN_CAN_TX, BMS_CAN_FREQUENCY);
 
   // Set modes for IO
   /*

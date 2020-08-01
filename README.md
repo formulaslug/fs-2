@@ -18,7 +18,7 @@ Features/fixes can only be added with a pull request. Branches should be named a
 - Feature: `feature/<short description>`
 
 ### Required tools
-- [mbed cli](https://github.com/ARMmbed/mbed-cli)
+- [mbed cli](https://os.mbed.com/docs/mbed-os/v6.2/quick-start/build-with-mbed-cli.html)
 - [GNU Arm Embedded Toolchain](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm)
     - Ubuntu/Debian: `gcc-arm-none-eabi`
     - Brew: `gcc-arm-embedded`

@@ -43,8 +43,8 @@ class BMSThread {
 
   void throwBmsFault() {
     m_discharging = false;
-    bms_flt->write(0);
-    charger_ctrl->write(1);
+    bmsFault->write(0);
+    chargerControl->write(1);
 
   }
   void threadWorker() {

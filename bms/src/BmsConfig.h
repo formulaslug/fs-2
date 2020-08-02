@@ -13,6 +13,11 @@ extern Serial* serial;
 // This allows for all files to access the can bus output
 extern CAN* canBus;
 
+//Global pointer to DigitalOut objects for BMS_FAULT and CHARGER_CONTROL pins
+//
+//This allows for all files to access BMS_FAULT and CHARGER_CONTROL pins
+extern DigitalOut* bms_flt;
+extern DigitalOut* charger_ctrl;
 
 //
 // BMS Master Configuration

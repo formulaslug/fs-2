@@ -43,8 +43,9 @@ class BMSThread {
 
   void throwBmsFault() {
     m_discharging = false;
-    //palClearLine(LINE_BMS_FLT);
-    //palSetLine(LINE_CHARGER_CONTROL);
+    bms_flt->write(0);
+    charger_ctrl->write(1);
+
   }
   void threadWorker() {
     uint16_t* allVoltages = new uint16_t[BMS_BANK_COUNT * BMS_BANK_CELL_COUNT];

@@ -32,6 +32,8 @@
 
 Serial* serial;
 CAN* canBus;
+DigitalOut* bms_flt;
+DigitalOut* charger_ctrl;
 
 void initIO();
 
@@ -75,22 +77,24 @@ void initIO() {
   
   canBus = new CAN(BMS_PIN_CAN_RX, BMS_PIN_CAN_TX, BMS_CAN_FREQUENCY);
 
+  bms_flt = new DigitalOut(BMS_PIN_BMS_FLT);
+  
+  charger_ctrl = new DigitalOut(BMS_PIN_CHARGER_CONTROL);
+  
   // Set modes for IO
   /*
-  palSetLineMode(LINE_BMS_FLT, PAL_MODE_OUTPUT_PUSHPULL);
   palSetLineMode(LINE_BMS_FLT_LAT, PAL_MODE_INPUT);
   palSetLineMode(LINE_IMD_STATUS, PAL_MODE_INPUT);
   palSetLineMode(LINE_IMD_FLT_LAT, PAL_MODE_INPUT);
-  palSetLineMode(LINE_CHARGER_CONTROL, PAL_MODE_OUTPUT_PUSHPULL);
   palSetLineMode(LINE_SIG_CURRENT, PAL_MODE_INPUT_ANALOG);
   */
 
   // Reset BMS fault line
-  //palSetLine(LINE_BMS_FLT);
-  // palClearLine(LINE_BMS_FLT);
+  bms_flt->write(1);
+  bms_flt->write(0);
 
   // Enable charging
-  //palClearLine(LINE_CHARGER_CONTROL);
+  charger_ctrl->write(0);
 
   // Set modes for SPI
   /*

@@ -4,6 +4,8 @@
 
 #include <stdint.h>
 
+#include "mbed.h"
+
 // SIDs From Accumulator
 constexpr uint32_t kFuncIdHeartBeatAcc = 0x701;
 constexpr uint32_t kFuncIdCellStartup = 0x420;
@@ -48,7 +50,7 @@ CANMessage BMSVoltageMessage (uint8_t row, uint16_t * voltages) {
   uint8_t data[8];
   for (int i = 0; i < 8; i += 2) {
     data[i] = voltages[i/2] >> 8;
-    data[++i] = voltages [i/2];
+    data[i + 1] = voltages [i/2];
   }
   return CANMessage(kFuncIdCellVoltage[row], data);
 }

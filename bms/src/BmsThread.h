@@ -124,12 +124,12 @@ class BMSThread {
 
             if (voltage >= BMS_FAULT_VOLTAGE_THRESHOLD_HIGH) {
               // Set fault line
-              serial->printf("***** BMS LOW VOLTAGE FAULT *****\nVoltage at %d\n\n", voltage);
+              serial->printf("***** BMS HIGH VOLTAGE FAULT *****\nVoltage at %d\n\n", voltage);
               throwBmsFault();
             }
             if (voltage <= BMS_FAULT_VOLTAGE_THRESHOLD_LOW) {
               // Set fault line
-              serial->printf("***** BMS HIGH VOLTAGE FAULT *****\nVoltage at %d\n\n", voltage);
+              serial->printf("***** BMS LOW VOLTAGE FAULT *****\nVoltage at %d\n\n", voltage);
               throwBmsFault();
             }
 

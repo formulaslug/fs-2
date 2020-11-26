@@ -51,8 +51,8 @@ uint16_t *LTC6811::getVoltages() {
   auto cmd = StartCellVoltageADC(AdcMode::k7k, false, CellSelection::kAll);
   m_bus.sendCommand(LTC6811Bus::buildAddressedCommand(m_id, cmd));
 
-  // Wait 2 ms for ADC to finish
-  ThisThread::sleep_for(2); // TODO: Change
+  //wait for 3ms
+  waitForADCV(AdcMode::k7k, this->m_config.adcMode);
 
   // 4  * (Register of 6 Bytes + PEC)
   uint8_t rxbuf[8 * 4];
@@ -82,8 +82,8 @@ uint16_t *LTC6811::getGpio() {
   auto cmd = StartGpioADC(AdcMode::k7k, GpioSelection::kAll);
   m_bus.sendCommand(LTC6811Bus::buildAddressedCommand(m_id, cmd));
 
-  // Wait 15 ms for ADC to finish
-  ThisThread::sleep_for(5); // TODO: This could be done differently
+  //wait for 3ms
+  waitForADCV(AdcMode::k7k, this->m_config.adcMode);
 
   uint8_t rxbuf[8 * 2];
 
@@ -110,8 +110,8 @@ uint16_t *LTC6811::getGpioPin(GpioSelection pin) {
   auto cmd = StartGpioADC(AdcMode::k7k, pin);
   m_bus.sendCommand(LTC6811Bus::buildAddressedCommand(m_id, cmd));
 
-  // Wait 5 ms for ADC to finish
-  ThisThread::sleep_for(pin == GpioSelection::kAll ? 15 : 5); // TODO: Change to polling
+  //wait for 3ms
+  waitForADCV(AdcMode::k7k, this->m_config.adcMode);
 
   uint8_t rxbuf[8 * 2];
 
@@ -132,4 +132,24 @@ uint16_t *LTC6811::getGpioPin(GpioSelection pin) {
   }
 
   return voltages;
+}
+
+
+/*Sleeps thread until ADCV is complete based on ADC setting
+Values obtained from https://www.analog.com/media/en/technical-documentation/data-sheets/LTC6811-1-6811-2.pdf on page 61*/
+void LTC6811::waitForADCV(AdcMode speed, AdcModeOption mode) {
+  if (mode == AdcModeOption::kDefault){
+    if (speed == AdcMode::k422) ThisThread::sleep_for(13);
+    else if (speed == AdcMode::k27k) ThisThread::sleep_for(2);
+    else if (speed == AdcMode::k7k) ThisThread::sleep_for(3);
+    else if (speed == AdcMode::k26) ThisThread::sleep_for(202);
+  }
+	
+  else{
+    if (speed == AdcMode::k1k) ThisThread::sleep_for(8);
+    else if (speed == AdcMode::k14k) ThisThread::sleep_for(2);
+    else if (speed == AdcMode::k3k) ThisThread::sleep_for(4);
+    else if (speed == AdcMode::k1k) ThisThread::sleep_for(5);
+  }	
+ 
 }

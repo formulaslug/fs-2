@@ -56,7 +56,7 @@ void LTC6811Bus::send(uint8_t txCmd[2]) {
 
 #ifdef DEBUG
   for (int i = 0; i < 4; i++) {
-    serial->printf("CMD: %d: 0x%x\r\n", i, cmd[i]);
+    printf("CMD: %d: 0x%x\r\n", i, cmd[i]);
   }
 #endif
 
@@ -81,10 +81,10 @@ void LTC6811Bus::sendData(uint8_t txCmd[2], uint8_t txData[6]) {
 
 #ifdef DEBUG
   for (int i = 0; i < 4; i++) {
-    serial->printf("CMD: %d: 0x%x\r\n", i, cmd[i]);
+    printf("CMD: %d: 0x%x\r\n", i, cmd[i]);
   }
   for (int i = 0; i < 8; i++) {
-    serial->printf("Byte: %d: 0x%x\r\n", i, data[i]);
+    printf("Byte: %d: 0x%x\r\n", i, data[i]);
   }
 #endif
 
@@ -124,12 +124,12 @@ void LTC6811Bus::sendCommandWithData(Command txCmd, uint8_t txData[6]) {
 
 #ifdef DEBUG
   for (int i = 0; i < 4; i++) {
-    serial->printf("CMD: %d: 0x%x\r\n", i, cmd[i]);
+    printf("CMD: %d: 0x%x\r\n", i, cmd[i]);
   }
   for (int i = 0; i < 8; i++) {
-    serial->printf("Byte: %d: 0x%x\r\n", i, data[i]);
+    printf("Byte: %d: 0x%x\r\n", i, data[i]);
   }
-  serial->printf("pec: 0x%x\r\n", dataPec);
+  printf("pec: 0x%x\r\n", dataPec);
 #endif
 
   wakeupSpi();
@@ -147,7 +147,7 @@ void LTC6811Bus::readCommand(Command txCmd, uint8_t *rxbuf) {
                     (uint8_t)(cmdPec)};
 #ifdef DEBUG
   for (int i = 0; i < 4; i++) {
-    serial->printf("CMD: %d: 0x%x\r\n", i, cmd[i]);
+    printf("CMD: %d: 0x%x\r\n", i, cmd[i]);
   }
 #endif
 
@@ -159,7 +159,7 @@ void LTC6811Bus::readCommand(Command txCmd, uint8_t *rxbuf) {
 
 #ifdef DEBUG
   for (int i = 0; i < 8; i++) {
-    serial->printf("READ: %d: 0x%x\r\n", i, rxbuf[i]);
+    printf("READ: %d: 0x%x\r\n", i, rxbuf[i]);
   }
 #endif
 
@@ -167,7 +167,7 @@ void LTC6811Bus::readCommand(Command txCmd, uint8_t *rxbuf) {
   bool goodPec = ((uint8_t)(dataPec >> 8)) == rxbuf[6] && ((uint8_t)dataPec) == rxbuf[7];
   if (!goodPec) {
     // TODO: return error or throw out read result
-    serial->printf("ERR: Bad PEC on read. Computed: 0x%x. Actual: 0x%x\r\n", dataPec, (uint16_t)(rxbuf[6] << 8 | rxbuf[7]));
+    //printf("ERR: Bad PEC on read. Computed: 0x%x. Actual: 0x%x\r\n", dataPec, (uint16_t)(rxbuf[6] << 8 | rxbuf[7]));
   }
 }
 

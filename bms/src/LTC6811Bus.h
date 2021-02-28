@@ -6,7 +6,10 @@
 
 class LTC6811Bus {
  public:
-  enum class AddressingMode : uint8_t { kBroadcast = 0x00, kAddress = 0x01 };
+  enum class AddressingMode : uint8_t {
+    kBroadcast = 0x00,
+    kAddress = 0x01
+  };
   enum class CommandCode : uint16_t {
     kWriteConfiguration = 0x0001,
     kReadVoltageA = 0x0004,
@@ -14,7 +17,6 @@ class LTC6811Bus {
     kReadVoltageC = 0x0008,
     kReadVoltageD = 0x000A
   };
-
   union Command {
     uint16_t value;
     uint8_t valueArr[2];

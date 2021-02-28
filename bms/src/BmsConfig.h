@@ -2,12 +2,6 @@
 
 #include "mbed.h"
 
-
-// Global pointer to serial object
-//
-// This allows for all files to access the serial output
-extern Serial* serial;
-
 // Global pointer to can bus object
 //
 // This allows for all files to access the can bus output

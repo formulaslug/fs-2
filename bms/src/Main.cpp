@@ -1,13 +1,17 @@
 #include "BmsConfig.h"
-//#include "common.h"
-#include "Can.h"
 
+//#include "cmsis_os.h"
+//#include "cmsis_os2.h"
 #include "mbed.h"
 #include "rtos.h"
 
+//#include "spdlog/spdlog.h"
+
 #include "BmsThread.h"
+#include "Can.h"
 //#include "CANOptions.h"
 #include "LTC6811Bus.h"
+#include "Event.h"
 
 // When car is off maybe one reading every 10 sec
 // when car is on 10 readings per second
@@ -30,7 +34,6 @@
 // * Comm fail
 
 
-Serial* serial;
 CAN* canBus;
 DigitalOut* bmsFault;
 DigitalOut* chargerControl;
@@ -53,8 +56,13 @@ int main() {
   spiDriver->format(8, 0);
   LTC6811Bus ltcBus = LTC6811Bus(spiDriver);
 
-  BMSThread bmsThread(&ltcBus, 1);
-  //bmsThread.start(NORMALPRIO + 1);
+  auto canMailbox = new BmsEventMailbox();
+  auto uiMailbox = new BmsEventMailbox();
+  std::vector<BmsEventMailbox*> mailboxes = { canMailbox, uiMailbox };
+
+  Thread bmsThreadThread;
+  BMSThread bmsThread(&ltcBus, 1, mailboxes);
+  bmsThreadThread.start(callback(&BMSThread::startThread, &bmsThread));
 
   DigitalOut led(LED1);
   // Flash LEDs to indicate startup
@@ -65,15 +73,54 @@ int main() {
     ThisThread::sleep_for(50);
   }
 
-  while (1) {
-    // Sleep 100 secs
-    ThisThread::sleep_for(100 * 1000);
+  while(true) {
+    auto event = canMailbox->get();
+    if (event.status == osEventMessage) {
+      BmsEvent* msg = (BmsEvent*)event.value.p;
+
+      switch(msg->getType()) {
+      case BmsEventType::VoltageMeasurement: {
+        auto converted = static_cast<VoltageMeasurement*>(msg);
+        
+        printf("Voltages: \n");
+        for (int i = 0; i < BMS_BANK_COUNT; i++) {
+          for(int j = 0; j < BMS_BANK_CELL_COUNT; j++) {
+            printf("%4dmV ", converted->voltageValues[(i * BMS_BANK_CELL_COUNT) + j]);
+          }
+          printf("\n");
+        }
+        converted->~VoltageMeasurement();
+        break;
+      }
+      case BmsEventType::TemperatureMeasurement: {
+        auto converted = static_cast<TemperatureMeasurement*>(msg);
+        
+        printf("Temperatures: \n");
+        for (int i = 0; i < BMS_BANK_COUNT; i++) {
+          for(int j = 0; j < BMS_BANK_TEMP_COUNT; j++) {
+            auto val = converted->temperatureValues[(i * BMS_BANK_CELL_COUNT) + j];
+            if(val.has_value()) {
+              printf("%2d ", val.value());
+            } else {
+              printf("XX ");
+            }
+          }
+          printf("\n");
+        }
+        converted->~TemperatureMeasurement();
+        break;
+      }
+      default:
+        break;
+      }
+      delete msg;
+    }
   }
+  bmsThreadThread.join();
 }
 
 void initIO() {
-  serial = new Serial(USBTX, USBRX);
-  serial->printf("INIT\n");
+  printf("INIT\n");
   
   canBus = new CAN(BMS_PIN_CAN_RX, BMS_PIN_CAN_TX, BMS_CAN_FREQUENCY);
 

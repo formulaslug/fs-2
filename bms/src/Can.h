@@ -1,6 +1,7 @@
 // Copyright (c) 2018 Formula Slug. All Rights Reserved.
 
-#pragma once
+#ifndef _FS_BMS_SRC_CAN_H_
+#define _FS_BMS_SRC_CAN_H_
 
 #include <stdint.h>
 
@@ -62,3 +63,5 @@ CANMessage BMSTempMessage (uint8_t row, uint8_t * temps) {
   }
   return CANMessage(kFuncIdCellTempAdc[row], data, 7);
 }
+
+#endif // _FS_BMS_SRC_CAN_H_

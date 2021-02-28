@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 class LTC6811Command {
  public:
   virtual uint16_t toValue() const = 0;

@@ -16,13 +16,13 @@
 
 #include "EnergusTempSensor.h"
 #include "LTC6811.h"
-#include "LTC6811Bus.h"
+#include "LTC681xBus.h"
 #include "Event.h"
 
 class BMSThread {
  public:
 
-  BMSThread(LTC6811Bus* bus, unsigned int frequency, std::vector<BmsEventMailbox*> mailboxes);
+  BMSThread(LTC681xBus& bus, unsigned int frequency, std::vector<BmsEventMailbox*> mailboxes);
 
   // Function to allow for starting threads from static context
   static void startThread(BMSThread *p) {
@@ -31,7 +31,7 @@ class BMSThread {
 
  private:
   unsigned int m_delay;
-  LTC6811Bus* m_bus;
+  LTC681xBus& m_bus;
   std::vector<LTC6811> m_chips;
   std::vector<BmsEventMailbox*> mailboxes;
   

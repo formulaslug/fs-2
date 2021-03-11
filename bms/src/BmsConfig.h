@@ -19,7 +19,7 @@ extern DigitalOut* chargerControl;
 
 // Number of LTC6811 battery banks to communicate with
 #ifndef BMS_BANK_COUNT
-#define BMS_BANK_COUNT 4
+#define BMS_BANK_COUNT 1
 #endif
 
 // Number of cell voltage readings per LTC6811
@@ -82,7 +82,7 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
 //
 // To be set high and held high when software enters fault state
 #ifndef BMS_PIN_BMS_FLT
-#define BMS_PIN_BMS_FLT NC
+#define BMS_PIN_BMS_FLT p10
 #endif
 
 // BMS fault latch
@@ -110,7 +110,7 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
 //
 // To be pulled high to enable charger
 #ifndef BMS_PIN_CHARGER_CONTROL
-#define BMS_PIN_CHARGER_CONTROL NC
+#define BMS_PIN_CHARGER_CONTROL p11
 #endif
 
 // Current input

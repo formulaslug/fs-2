@@ -10,7 +10,7 @@
 #include "BmsThread.h"
 #include "Can.h"
 //#include "CANOptions.h"
-#include "LTC6811Bus.h"
+#include "LTC681xBus.h"
 #include "Event.h"
 
 // When car is off maybe one reading every 10 sec
@@ -46,7 +46,7 @@ int main() {
   
   canBus->write(BMSCellStartup());
 
-  ThisThread::sleep_for(1000);
+  ThisThread::sleep_for(1s);
 
   SPI* spiDriver = new SPI(BMS_PIN_SPI_MOSI,
                            BMS_PIN_SPI_MISO,
@@ -54,23 +54,23 @@ int main() {
                            BMS_PIN_SPI_SSEL,
                            use_gpio_ssel);
   spiDriver->format(8, 0);
-  LTC6811Bus ltcBus = LTC6811Bus(spiDriver);
+  auto ltcBus = LTC681xParallelBus(spiDriver);
 
   auto canMailbox = new BmsEventMailbox();
   auto uiMailbox = new BmsEventMailbox();
   std::vector<BmsEventMailbox*> mailboxes = { canMailbox, uiMailbox };
 
   Thread bmsThreadThread;
-  BMSThread bmsThread(&ltcBus, 1, mailboxes);
+  BMSThread bmsThread(ltcBus, 1, mailboxes);
   bmsThreadThread.start(callback(&BMSThread::startThread, &bmsThread));
 
   DigitalOut led(LED1);
   // Flash LEDs to indicate startup
   for (int i = 0; i < 4; i++) {
     led = 1;
-    ThisThread::sleep_for(50);
+    ThisThread::sleep_for(50ms);
     led = 0;
-    ThisThread::sleep_for(50);
+    ThisThread::sleep_for(50ms);
   }
 
   while(true) {

@@ -1,2 +1,2 @@
-mbed-os
-optional
+.mbedbuild
+cmake_build/

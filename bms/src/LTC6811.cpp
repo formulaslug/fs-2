@@ -3,9 +3,9 @@
 #include "mbed.h"
 #include "rtos.h"
 
-#include "LTC6811Bus.h"
+#include "LTC681xParallelBus.h"
 
-LTC6811::LTC6811(LTC6811Bus &bus, uint8_t id) : m_bus(bus), m_id(id) {
+LTC6811::LTC6811(LTC681xBus &bus, uint8_t id) : m_bus(bus), m_id(id) {
   m_config =
     Configuration{.gpio5 = GPIOOutputState::kPassive,
                   .gpio4 = GPIOOutputState::kPassive,
@@ -24,14 +24,14 @@ LTC6811::LTC6811(LTC6811Bus &bus, uint8_t id) : m_bus(bus), m_id(id) {
 void LTC6811::updateConfig() {
   // Create configuration data to write
   uint8_t config[6];
-  config[0] = (uint8_t)m_config.gpio5 << 7
-    | (uint8_t)m_config.gpio4 << 6
-    | (uint8_t)m_config.gpio3 << 5
-    | (uint8_t)m_config.gpio2 << 4
-    | (uint8_t)m_config.gpio1 << 3
-    | (uint8_t)m_config.referencePowerOff << 2
-    | (uint8_t)m_config.dischargeTimerEnabled << 1
-    | (uint8_t)m_config.adcMode;
+  config[0] = (uint8_t) m_config.gpio5 << 7
+    | (uint8_t) m_config.gpio4 << 6
+    | (uint8_t) m_config.gpio3 << 5
+    | (uint8_t) m_config.gpio2 << 4
+    | (uint8_t) m_config.gpio1 << 3
+    | (uint8_t) m_config.referencePowerOff << 2
+    | (uint8_t) m_config.dischargeTimerEnabled << 1
+    | (uint8_t) m_config.adcMode;
   config[1] = m_config.undervoltageComparison & 0xFF;
   config[2] = ((m_config.undervoltageComparison >> 8) & 0x0F)
     | (((uint8_t)m_config.overvoltageComparison & 0x0F) << 4);
@@ -40,16 +40,16 @@ void LTC6811::updateConfig() {
   config[5] = (((uint8_t)m_config.dischargeTimeout & 0x0F) << 4)
     | ((m_config.dischargeState.value >> 8) & 0x0F);
 
-  LTC6811Bus::Command cmd = LTC6811Bus::buildAddressedCommand(m_id, WriteConfigurationGroupA());
+  auto cmd = LTC681xBus::BuildAddressedBusCommand(WriteConfigurationGroupA(), m_id);
 
-  m_bus.sendCommandWithData(cmd, config);
+  m_bus.SendDataCommand(cmd, config);
 }
 
 LTC6811::Configuration &LTC6811::getConfig() { return m_config; }
 
 uint16_t *LTC6811::getVoltages() {
   auto cmd = StartCellVoltageADC(AdcMode::k7k, false, CellSelection::kAll);
-  m_bus.sendCommand(LTC6811Bus::buildAddressedCommand(m_id, cmd));
+  m_bus.SendCommand(LTC681xBus::BuildAddressedBusCommand(cmd, m_id));
 
   // Wait 2 ms for ADC to finish
   ThisThread::sleep_for(2); // TODO: Change
@@ -57,10 +57,10 @@ uint16_t *LTC6811::getVoltages() {
   // 4  * (Register of 6 Bytes + PEC)
   uint8_t rxbuf[8 * 4];
 
-  m_bus.readCommand(LTC6811Bus::buildAddressedCommand(m_id, ReadCellVoltageGroupA()), rxbuf);
-  m_bus.readCommand(LTC6811Bus::buildAddressedCommand(m_id, ReadCellVoltageGroupB()), rxbuf + 8);
-  m_bus.readCommand(LTC6811Bus::buildAddressedCommand(m_id, ReadCellVoltageGroupC()), rxbuf + 16);
-  m_bus.readCommand(LTC6811Bus::buildAddressedCommand(m_id, ReadCellVoltageGroupD()), rxbuf + 24);
+  m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupA(), m_id), rxbuf);
+  m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupB(), m_id), rxbuf + 8);
+  m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupC(), m_id), rxbuf + 16);
+  m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupD(), m_id), rxbuf + 24);
 
   // Voltage = val • 100μV
   uint16_t *voltages = new uint16_t[12];
@@ -80,15 +80,15 @@ uint16_t *LTC6811::getVoltages() {
 
 uint16_t *LTC6811::getGpio() {
   auto cmd = StartGpioADC(AdcMode::k7k, GpioSelection::kAll);
-  m_bus.sendCommand(LTC6811Bus::buildAddressedCommand(m_id, cmd));
+  m_bus.SendCommand(LTC681xBus::BuildAddressedBusCommand(cmd, m_id));
 
   // Wait 15 ms for ADC to finish
   ThisThread::sleep_for(5); // TODO: This could be done differently
 
   uint8_t rxbuf[8 * 2];
 
-  m_bus.readCommand(LTC6811Bus::buildAddressedCommand(m_id, ReadAuxiliaryGroupA()), rxbuf);
-  m_bus.readCommand(LTC6811Bus::buildAddressedCommand(m_id, ReadAuxiliaryGroupB()), rxbuf + 8);
+  m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadAuxiliaryGroupA(), m_id), rxbuf);
+  m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadAuxiliaryGroupB(), m_id), rxbuf + 8);
 
   uint16_t *voltages = new uint16_t[5];
 
@@ -108,15 +108,15 @@ uint16_t *LTC6811::getGpio() {
 
 uint16_t *LTC6811::getGpioPin(GpioSelection pin) {
   auto cmd = StartGpioADC(AdcMode::k7k, pin);
-  m_bus.sendCommand(LTC6811Bus::buildAddressedCommand(m_id, cmd));
+  m_bus.SendCommand(LTC681xBus::BuildAddressedBusCommand(cmd, m_id));
 
   // Wait 5 ms for ADC to finish
   ThisThread::sleep_for(pin == GpioSelection::kAll ? 15 : 5); // TODO: Change to polling
 
   uint8_t rxbuf[8 * 2];
 
-  m_bus.readCommand(LTC6811Bus::buildAddressedCommand(m_id, ReadAuxiliaryGroupA()), rxbuf);
-  m_bus.readCommand(LTC6811Bus::buildAddressedCommand(m_id, ReadAuxiliaryGroupB()), rxbuf + 8);
+  m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadAuxiliaryGroupA(), m_id), rxbuf);
+  m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadAuxiliaryGroupB(), m_id), rxbuf + 8);
 
   uint16_t *voltages = new uint16_t[5];
 

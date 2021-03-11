@@ -1,8 +1,11 @@
 // Copyright (c) 2018 Formula Slug. All Rights Reserved.
 
-#pragma once
+#ifndef _FS_BMS_SRC_CAN_H_
+#define _FS_BMS_SRC_CAN_H_
 
 #include <stdint.h>
+
+#include "mbed.h"
 
 // SIDs From Accumulator
 constexpr uint32_t kFuncIdHeartBeatAcc = 0x701;
@@ -48,7 +51,7 @@ CANMessage BMSVoltageMessage (uint8_t row, uint16_t * voltages) {
   uint8_t data[8];
   for (int i = 0; i < 8; i += 2) {
     data[i] = voltages[i/2] >> 8;
-    data[++i] = voltages [i/2];
+    data[i + 1] = voltages [i/2];
   }
   return CANMessage(kFuncIdCellVoltage[row], data);
 }
@@ -60,3 +63,5 @@ CANMessage BMSTempMessage (uint8_t row, uint8_t * temps) {
   }
   return CANMessage(kFuncIdCellTempAdc[row], data, 7);
 }
+
+#endif // _FS_BMS_SRC_CAN_H_

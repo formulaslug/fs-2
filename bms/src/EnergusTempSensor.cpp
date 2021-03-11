@@ -33,7 +33,7 @@ static int8_t linearInterpolateSegment(ConversionPoint low,
 //
 // voltage: voltage in mV
 // value: temp as unsigned byte
-tl::optional<int8_t> convertTemp(uint16_t voltage) {
+std::optional<int8_t> convertTemp(uint16_t voltage) {
   for (unsigned int i = 0; i < tempLookupTableSize; i++) {
     if (voltage > tempLookupTable[i].voltage) {
       if (i != tempLookupTableSize - 1)

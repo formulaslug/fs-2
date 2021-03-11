@@ -1,6 +1,6 @@
 #pragma once
 
-#include "LTC6811Bus.h"
+#include <LTC681xParallelBus.h>
 
 class LTC6811 {
  public:
@@ -63,7 +63,7 @@ class LTC6811 {
     DischargeTimeoutValue dischargeTimeout;
   };
 
-  LTC6811(LTC6811Bus &bus, uint8_t id);
+  LTC6811(LTC681xBus &bus, uint8_t id);
   Configuration &getConfig();
   void updateConfig();
 
@@ -72,7 +72,7 @@ class LTC6811 {
   uint16_t *getGpioPin(GpioSelection pin);
 
  private:
-  LTC6811Bus &m_bus;
+  LTC681xBus &m_bus;
   uint8_t m_id;
   Configuration m_config;
 };

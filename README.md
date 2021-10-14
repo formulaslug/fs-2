@@ -18,7 +18,7 @@ Features/fixes can only be added with a pull request. Branches should be named a
 - Feature: `feature/<short description>`
 
 ### Required tools
-- [mbed cli](https://os.mbed.com/docs/mbed-os/v6.2/quick-start/build-with-mbed-cli.html)
+- [mbed-tools](https://github.com/ARMmbed/mbed-tools)
 - [GNU Arm Embedded Toolchain](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm)
     - Ubuntu/Debian: `gcc-arm-none-eabi`
     - Brew: `gcc-arm-embedded`
@@ -30,7 +30,7 @@ Features/fixes can only be added with a pull request. Branches should be named a
 A project's dependencies can be installed by running the following command in the project folder.
 
 ```
-mbed update
+mbed deploy
 ```
 
 This will produce warnings about not using source control management. These can be safely ignored.
@@ -69,4 +69,4 @@ then the corresponding directory should be added to the `.gitignore` in the proj
 
 ### All other issues
 
-For any other issues see the [mbed cli documentation](https://os.mbed.com/docs/mbed-os/v5.15/tools/working-with-mbed-cli.html).
+For any other issues see the [mbed documentation](https://os.mbed.com/docs/mbed-os).

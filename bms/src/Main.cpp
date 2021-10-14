@@ -1,7 +1,5 @@
 #include "BmsConfig.h"
 
-//#include "cmsis_os.h"
-//#include "cmsis_os2.h"
 #include "mbed.h"
 #include "rtos.h"
 
@@ -142,16 +140,4 @@ void initIO() {
 
   // Enable charging
   chargerControl->write(0);
-
-  // Set modes for SPI
-  /*
-    palSetLineMode(LINE_SPI_MISO,
-                 PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_HIGHEST);
-  palSetLineMode(LINE_SPI_MOSI,
-                 PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_HIGHEST);
-  palSetLineMode(LINE_SPI_SCLK,
-                 PAL_MODE_ALTERNATE(5) | PAL_STM32_OSPEED_HIGHEST);
-  palSetLineMode(LINE_SPI_SSEL,
-                 PAL_MODE_OUTPUT_PUSHPULL | PAL_STM32_OSPEED_HIGHEST);
-  */
 }

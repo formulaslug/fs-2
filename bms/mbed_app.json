@@ -2,6 +2,11 @@
     "target_overrides": {
         "LPC1768": {
             "platform.stdio-baud-rate": 115200,
+            "platform.default-serial-baud-rate": 115200,
+            "MBED_CONF_PLATFORM_ERROR_FILENAME_CAPTURE_ENABLED": "True"
+        },
+        "NUCLEO_F303K8": {
+            "platform.stdio-baud-rate": 115200,
             "platform.default-serial-baud-rate": 115200
         }
     }

@@ -19,7 +19,7 @@ extern DigitalOut* chargerControl;
 
 // Number of LTC6811 battery banks to communicate with
 #ifndef BMS_BANK_COUNT
-#define BMS_BANK_COUNT 1
+#define BMS_BANK_COUNT 4
 #endif
 
 // Number of cell voltage readings per LTC6811
@@ -82,42 +82,90 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
 //
 // To be set high and held high when software enters fault state
 #ifndef BMS_PIN_BMS_FLT
-#define BMS_PIN_BMS_FLT p10
+
+#ifdef TARGET_LPC1768
+  #define BMS_PIN_BMS_FLT p10
+#elif TARGET_NUCLEO_F303K8
+  #define BMS_PIN_BMS_FLT PB_0
+#else
+  #error "Unknown board for BMS_PIN_BMS_FLT"
+#endif
+
 #endif
 
 // BMS fault latch
 //
 // Readback from BMS fault relay to be broadcasted on CAN bus
 #ifndef BMS_PIN_BMS_FLT_LAT
-#define BMS_PIN_BMS_FLT_LAT NC
+
+#ifdef TARGET_LPC1768
+  #define BMS_PIN_BMS_FLT_LAT p12
+#elif TARGET_NUCLEO_F303K8
+  #define BMS_PIN_BMS_FLT_LAT PF_1
+#else
+  #error "Unknown board for BMS_PIN_BMS_FLT_LAT"
+#endif
+
 #endif
 
 // IMD status input
 //
 // Reads PWM output from IMD board
 #ifndef BMS_PIN_IMD_STATUS
-#define BMS_PIN_IMD_STATUS NC
+
+#ifdef TARGET_LPC1768
+  #define BMS_PIN_IMD_STATUS p14
+#elif TARGET_NUCLEO_F303K8
+  #define BMS_PIN_IMD_STATUS PF_0
+#else
+  #error "Unknown board for BMS_PIN_IMD_STATUS"
+#endif
+
 #endif
 
 // IMD fault latch
 //
 // Readback from IMD fault relay to be broadcasted on CAN bus
 #ifndef BMS_PIN_IMD_FLT_LAT
-#define BMS_PIN_IMD_FLT_LAT NC
+
+#ifdef TARGET_LPC1768
+  #define BMS_PIN_IMD_FLT_LAT p13
+#elif TARGET_NUCLEO_F303K8
+  #define BMS_PIN_IMD_FLT_LAT PA_8
+#else
+  #error "Unknown board for BMS_PIN_IMD_FLT_LAT"
+#endif
+
 #endif
 
 // Charger output
 //
 // To be pulled high to enable charger
 #ifndef BMS_PIN_CHARGER_CONTROL
-#define BMS_PIN_CHARGER_CONTROL p11
+
+#ifdef TARGET_LPC1768
+  #define BMS_PIN_CHARGER_CONTROL p11
+#elif TARGET_NUCLEO_F303K8
+  #define BMS_PIN_CHARGER_CONTROL PB_1
+#else
+  #error "Unknown board for BMS_PIN_CHARGER_CONTROL"
+#endif
+
 #endif
 
 // Current input
 //
 // Input from analog current sensor
 #ifndef BMS_PIN_SIG_CURRENT
-#define BMS_PIN_SIG_CURRENT NC
+
+#ifdef TARGET_LPC1768
+  #define BMS_PIN_SIG_CURRENT p15
+#elif TARGET_NUCLEO_F303K8
+  #define BMS_PIN_SIG_CURRENT PA_0
+#else
+  #error "Unknown board for BMS_PIN_SIG_CURRENT"
+#endif
+
 #endif
 
 
@@ -127,22 +175,54 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
 
 // SPI master out slave in
 #ifndef BMS_PIN_SPI_MOSI
-#define BMS_PIN_SPI_MOSI p5
+
+#ifdef TARGET_LPC1768
+  #define BMS_PIN_SPI_MOSI p5
+#elif TARGET_NUCLEO_F303K8
+  #define BMS_PIN_SPI_MOSI PA_7
+#else
+  #error "Unknown board for BMS_PIN_SPI_MOSI"
+#endif
+
 #endif
 
 // SPI master in slave out
 #ifndef BMS_PIN_SPI_MISO
-#define BMS_PIN_SPI_MISO p6
+
+#ifdef TARGET_LPC1768
+  #define BMS_PIN_SPI_MISO p6
+#elif TARGET_NUCLEO_F303K8
+  #define BMS_PIN_SPI_MISO PA_6
+#else
+  #error "Unknown board for BMS_PIN_SPI_MISO"
+#endif
+
 #endif
 
 // SPI clock
 #ifndef BMS_PIN_SPI_SCLK
-#define BMS_PIN_SPI_SCLK p7
+
+#ifdef TARGET_LPC1768
+  #define BMS_PIN_SPI_SCLK p7
+#elif TARGET_NUCLEO_F303K8
+  #define BMS_PIN_SPI_SCLK PA_5
+#else
+  #error "Unknown board for BMS_PIN_SPI_SCLK"
+#endif
+
 #endif
 
 // SPI chip select
 #ifndef BMS_PIN_SPI_SSEL
-#define BMS_PIN_SPI_SSEL p8
+
+#ifdef TARGET_LPC1768
+  #define BMS_PIN_SPI_SSEL p8
+#elif TARGET_NUCLEO_F303K8
+  #define BMS_PIN_SPI_SSEL PA_4
+#else
+  #error "Unknown board for BMS_PIN_SPI_SSEL"
+#endif
+
 #endif
 
 
@@ -152,12 +232,28 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
 
 // CAN TX pin to transceiver
 #ifndef BMS_PIN_CAN_TX
-#define BMS_PIN_CAN_TX p29
+
+#ifdef TARGET_LPC1768
+  #define BMS_PIN_CAN_TX p29
+#elif TARGET_NUCLEO_F303K8
+  #define BMS_PIN_CAN_TX PA_12
+#else
+  #error "Unknown board for BMS_PIN_CAN_TX"
+#endif
+
 #endif
 
 // CAN RX pin from transceiver
 #ifndef BMS_PIN_CAN_RX
-#define BMS_PIN_CAN_RX p30
+
+#ifdef TARGET_LPC1768
+  #define BMS_PIN_CAN_RX p30
+#elif TARGET_NUCLEO_F303K8
+  #define BMS_PIN_CAN_RX PA_11
+#else
+  #error "Unknown board for BMS_PIN_CAN_RX"
+#endif
+
 #endif
 
 // CAN frequency to used

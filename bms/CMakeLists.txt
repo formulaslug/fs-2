@@ -12,26 +12,30 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-register -Wno-deprecated-declaratio
 
 include(${MBED_PATH}/tools/cmake/app.cmake)
 
-add_subdirectory(${MBED_PATH})
+project(${APP_TARGET})
+
 
 # Libraries
+add_subdirectory(${MBED_PATH})
 add_subdirectory(lib-mbed-ltc681x)
 
-add_executable(${APP_TARGET}
-    src/Main.cpp
-    src/BmsThread.cpp
-    src/EnergusTempSensor.cpp
-    src/LTC6811.cpp
-)
-#target_include_directories(${APP_TARGET} ${ltc681x_SOURCE_DIR})
+
+add_executable(${APP_TARGET})
 
 mbed_configure_app_target(${APP_TARGET})
 
-project(${APP_TARGET})
+target_sources(${APP_TARGET}
+    PRIVATE
+        src/Main.cpp
+        src/BmsThread.cpp
+        src/EnergusTempSensor.cpp
+        src/LTC6811.cpp
+)
 
 target_link_libraries(${APP_TARGET}
-    mbed-os
-    lib-mbed-ltc681x
+    PRIVATE
+        mbed-os
+        lib-mbed-ltc681x
 )
 
 mbed_set_post_build(${APP_TARGET})

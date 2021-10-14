@@ -96,3 +96,6 @@ test_suite.json
 
 # default delivery dir
 DELIVERY/
+
+# clang compile commands
+compile_commands.json

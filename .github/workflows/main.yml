@@ -17,6 +17,8 @@ jobs:
         project: [bms]
         # The build profile to run on
         profile: [debug, release]
+        # The mbed target to build for
+        target: [LPC1768]
 
 
     steps:

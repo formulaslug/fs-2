@@ -65,3 +65,9 @@ debug: build-debug
 .PHONY: clean
 clean:
 	rm -rf $(BUILD_DIR)
+
+.PHONY: test
+test:
+	# Run all builds for testing
+	make MBED_TARGET=LPC1768 MBED_BUILD_PROFILE=debug build
+	make MBED_TARGET=LPC1768 MBED_BUILD_PROFILE=release build

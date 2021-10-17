@@ -2,14 +2,14 @@ name: CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   pull_request:
-    branches: [ master ]
+    branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: mbedos/mbed-os-env:stable
+    container: ghcr.io/armmbed/mbed-os-env:mbed-os-6.15-latest
 
     env:
       # The list of projects to run on. This should just run for each dir that includes a mbed_app.json
@@ -25,7 +25,7 @@ jobs:
       run: |
         for PROJECT in $PROJECTS; do
           pushd $PROJECT
-          mbed deploy
+          make deps
           popd
         done
 
@@ -35,6 +35,6 @@ jobs:
       run: |
         for PROJECT in $PROJECTS; do
           pushd $PROJECT
-          mbed compile
+          make test
           popd
         done

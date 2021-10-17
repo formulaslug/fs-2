@@ -17,5 +17,3 @@ make build
 ```
 
 This will download all required dependencies and configure and build the project.
-
-*NOTE: The build may fail on the first invocation due to an issue with mbed. In this case simply re-run the build command.*

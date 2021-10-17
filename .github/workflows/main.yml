@@ -20,6 +20,15 @@ jobs:
         # The mbed target to build for
         target: [LPC1768]
 
+        # Add STM32F303 target for bms
+        include:
+          - project: bms
+            profile: debug
+            target: NUCLEO_F303K8
+          - project: bms
+            profile: release
+            target: NUCLEO_F303K8
+
 
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it

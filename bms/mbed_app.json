@@ -1,4 +1,12 @@
 {
+    "config": {
+        "main-stack-size": {
+            "value": 2048
+        },
+        "stack-size": {
+            "value": 1024
+        }
+    },
     "target_overrides": {
         "LPC1768": {
             "platform.stdio-baud-rate": 115200,

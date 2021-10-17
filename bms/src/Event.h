@@ -25,7 +25,7 @@ public:
   virtual ~BmsEvent() {};
 };
 
-static constexpr auto mailboxSize = 4;
+static constexpr auto mailboxSize = 1;
 using BmsEventMailbox = Queue<BmsEvent, mailboxSize>;
 
 // Measurement

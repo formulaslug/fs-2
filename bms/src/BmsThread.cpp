@@ -4,11 +4,17 @@
 #include "LTC681xCommand.h"
 #include "ThisThread.h"
 
-BMSThread::BMSThread(LTC681xBus& bus, unsigned int frequency, std::vector<Queue<BmsEvent, mailboxSize>*> mailboxes) : m_bus(bus), mailboxes(mailboxes) {
+BMSThread::BMSThread(LTC681xBus& bus, unsigned int frequency, std::array<BmsEventMailbox*, 2> mailboxes)
+  : m_bus(bus)
+  , m_chips {
+      LTC6811(bus, 0),
+      LTC6811(bus, 1),
+      LTC6811(bus, 2),
+      LTC6811(bus, 3)
+    }
+  , mailboxes(mailboxes)
+{
   m_delay = 1000 / frequency;
-  for (int i = 0; i < BMS_BANK_COUNT; i++) {
-    m_chips.push_back(LTC6811(bus, i));
-  }
   for (int i = 0; i < BMS_BANK_COUNT; i++) {
     //m_chips[i].getConfig().gpio5 = LTC6811::GPIOOutputState::kLow;
     //m_chips[i].getConfig().gpio4 = LTC6811::GPIOOutputState::kPassive;
@@ -19,7 +25,7 @@ BMSThread::BMSThread(LTC681xBus& bus, unsigned int frequency, std::vector<Queue<
 
 void BMSThread::threadWorker() {
   // Perform self tests
-
+  //
   // Cell Voltage self test
   m_bus.WakeupBus();
   m_bus.SendCommand(LTC681xBus::BuildBroadcastBusCommand(StartSelfTestCellVoltage(AdcMode::k7k, SelfTestMode::kSelfTest1)));

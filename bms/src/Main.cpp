@@ -11,54 +11,46 @@
 #include "LTC681xBus.h"
 #include "Event.h"
 
-// When car is off maybe one reading every 10 sec
-// when car is on 10 readings per second
+#ifdef TARGET_NUCLEO_F303K8
+  // Required for setting MISO to pull up on STM32
+  #include <targets/TARGET_STM/TARGET_STM32F3/STM32Cube_FW/STM32F3xx_HAL_Driver/stm32f3xx_ll_gpio.h>
+#endif
 
-// TODO: map 12 cells to number of cells
-// TODO: change m_chips to array rather than vector
-// TODO: publish fault states
-// TODO: SoC tracking using Ah counting and voltage measuring
-
-// Fault states:
-// - AMS
-// - IMD
-//
-// * Over temp
-// - Under temp
-// * Over voltage
-// * Under voltage
-//
-// * Failed init
-// * Comm fail
-
-
-CAN* canBus;
-DigitalOut* bmsFault;
-DigitalOut* chargerControl;
+CAN canBus = CAN(BMS_PIN_CAN_RX, BMS_PIN_CAN_TX, BMS_CAN_FREQUENCY);
+DigitalOut bmsFault = DigitalOut(BMS_PIN_BMS_FLT);
+DigitalOut chargerControl = DigitalOut(BMS_PIN_CHARGER_CONTROL);
 
 void initIO();
+
+// TODO: We need a better way of statically allocating thread stack
+constexpr size_t STACK_SIZE = 1024;
+unsigned char bmsThreadStack[STACK_SIZE];
+Thread bmsThreadThread = Thread(osPriorityNormal, STACK_SIZE, bmsThreadStack);
 
 int main() {
   // Init all io pins
   initIO();
   
-  canBus->write(BMSCellStartup());
+  canBus.write(BMSCellStartup());
 
-  ThisThread::sleep_for(1s);
+  SPI spiDriver = SPI(BMS_PIN_SPI_MOSI,
+                      BMS_PIN_SPI_MISO,
+                      BMS_PIN_SPI_SCLK,
+                      BMS_PIN_SPI_SSEL,
+                      use_gpio_ssel);
+  
+#ifdef TARGET_NUCLEO_F303K8
+  // This is a hack required to set the MISO pin to use a pull up resistor
+  LL_GPIO_SetPinPull(GPIOA, LL_GPIO_PIN_6, LL_GPIO_PULL_UP);
+#endif
 
-  SPI* spiDriver = new SPI(BMS_PIN_SPI_MOSI,
-                           BMS_PIN_SPI_MISO,
-                           BMS_PIN_SPI_SCLK,
-                           BMS_PIN_SPI_SSEL,
-                           use_gpio_ssel);
-  spiDriver->format(8, 0);
-  auto ltcBus = LTC681xParallelBus(spiDriver);
+  spiDriver.format(8, 0);
+  auto ltcBus = LTC681xParallelBus(&spiDriver);
 
-  auto canMailbox = new BmsEventMailbox();
-  auto uiMailbox = new BmsEventMailbox();
-  std::vector<BmsEventMailbox*> mailboxes = { canMailbox, uiMailbox };
+  auto canMailbox = BmsEventMailbox();
+  auto uiMailbox = BmsEventMailbox();
+  std::array<BmsEventMailbox*, 2> mailboxes = { &canMailbox, &uiMailbox };
 
-  Thread bmsThreadThread;
   BMSThread bmsThread(ltcBus, 1, mailboxes);
   bmsThreadThread.start(callback(&BMSThread::startThread, &bmsThread));
 
@@ -72,7 +64,7 @@ int main() {
   }
 
   while(true) {
-    auto event = canMailbox->get();
+    auto event = canMailbox.get();
     if (event.status == osEventMessage) {
       BmsEvent* msg = (BmsEvent*)event.value.p;
 
@@ -120,12 +112,6 @@ int main() {
 void initIO() {
   printf("INIT\n");
   
-  canBus = new CAN(BMS_PIN_CAN_RX, BMS_PIN_CAN_TX, BMS_CAN_FREQUENCY);
-
-  bmsFault = new DigitalOut(BMS_PIN_BMS_FLT);
-  
-  chargerControl = new DigitalOut(BMS_PIN_CHARGER_CONTROL);
-  
   // Set modes for IO
   /*
   palSetLineMode(LINE_BMS_FLT_LAT, PAL_MODE_INPUT);
@@ -135,9 +121,9 @@ void initIO() {
   */
 
   // Reset BMS fault line
-  bmsFault->write(1);
-  bmsFault->write(0);
+  bmsFault.write(1);
+  bmsFault.write(0);
 
   // Enable charging
-  chargerControl->write(0);
+  chargerControl.write(0);
 }

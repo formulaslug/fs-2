@@ -7,18 +7,17 @@ set(MBED_PATH ${CMAKE_CURRENT_SOURCE_DIR}/mbed-os CACHE INTERNAL "")
 set(MBED_CONFIG_PATH ${CMAKE_CURRENT_BINARY_DIR} CACHE INTERNAL "")
 set(APP_TARGET bms)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-register -Wno-deprecated-declarations")
-
 include(${MBED_PATH}/tools/cmake/app.cmake)
 
 project(${APP_TARGET})
-
 
 # Libraries
 add_subdirectory(${MBED_PATH})
 add_subdirectory(lib-mbed-ltc681x)
 
+# Remove warnings that cause gcc to fail
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-register -Wno-deprecated-declarations")
 
 add_executable(${APP_TARGET})
 

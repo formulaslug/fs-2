@@ -11,9 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     container: ghcr.io/armmbed/mbed-os-env:mbed-os-6.15-latest
 
-    env:
-      # The list of projects to run on. This should just run for each dir that includes a mbed_app.json
-      PROJECTS: bms
+    strategy:
+      matrix:
+        # The list of projects to run on. This should just run for each dir that includes a mbed_app.json
+        project: [bms]
+        # The build profile to run on
+        profile: [debug, release]
+
 
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -23,18 +27,12 @@ jobs:
     - name: Install dependencies
       shell: bash
       run: |
-        for PROJECT in $PROJECTS; do
-          pushd $PROJECT
-          make deps
-          popd
-        done
+        cd ${{ matrix.project }}
+        make deps
 
     # Compile all projects
     - name: Compile
       shell: bash
       run: |
-        for PROJECT in $PROJECTS; do
-          pushd $PROJECT
-          make test
-          popd
-        done
+        cd ${{ matrix.project }}
+        make build

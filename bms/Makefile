@@ -2,9 +2,9 @@
 # Build file for Formula Slug FS-2 bms
 #
 
-MBED_TOOLCHAIN := GCC_ARM
-MBED_TARGET := LPC1768
-MBED_BUILD_PROFILE := release
+MBED_TOOLCHAIN ?= GCC_ARM
+MBED_TARGET ?= LPC1768
+MBED_BUILD_PROFILE ?= release
 
 BUILD_DIR := cmake_build
 
@@ -65,9 +65,3 @@ debug: build-debug
 .PHONY: clean
 clean:
 	rm -rf $(BUILD_DIR)
-
-.PHONY: test
-test:
-	# Run all builds for testing
-	make MBED_TARGET=LPC1768 MBED_BUILD_PROFILE=debug build
-	make MBED_TARGET=LPC1768 MBED_BUILD_PROFILE=release build

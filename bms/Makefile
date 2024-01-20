@@ -55,7 +55,7 @@ flash: deps $(BUILD_DIR)
 #
 
 .PHONY: debug
-debug: build-debug
+debug:
 	arm-none-eabi-gdb -x .gdbinit ./$(BUILD_DIR)/$(MBED_TARGET)/$(MBED_BUILD_PROFILE)/$(MBED_TOOLCHAIN)/bms.elf
 
 #

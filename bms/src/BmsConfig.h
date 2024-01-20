@@ -5,13 +5,13 @@
 // Global pointer to can bus object
 //
 // This allows for all files to access the can bus output
-extern CAN* canBus;
+//extern CAN* canBus;
 
 //Global pointer to DigitalOut objects for BMS_FAULT and CHARGER_CONTROL pins
 //
 //This allows for all files to access BMS_FAULT and CHARGER_CONTROL pins
-extern DigitalOut* bmsFault;
-extern DigitalOut* chargerControl;
+//extern DigitalOut* bmsFault;
+//extern DigitalOut* chargerControl;
 
 //
 // BMS Master Configuration

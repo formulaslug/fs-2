@@ -3,6 +3,7 @@
 #include "LTC681xBus.h"
 #include "LTC681xCommand.h"
 #include "ThisThread.h"
+#include <cstdint>
 
 BMSThread::BMSThread(LTC681xBus& bus, unsigned int frequency, std::vector<Queue<BmsEvent, mailboxSize>*> mailboxes) : m_bus(bus), mailboxes(mailboxes) {
   m_delay = 1000 / frequency;
@@ -23,7 +24,7 @@ void BMSThread::threadWorker() {
   // Cell Voltage self test
   m_bus.WakeupBus();
   m_bus.SendCommand(LTC681xBus::BuildBroadcastBusCommand(StartSelfTestCellVoltage(AdcMode::k7k, SelfTestMode::kSelfTest1)));
-  ThisThread::sleep_for(4);
+  ThisThread::sleep_for(4ms);
   m_bus.WakeupBus();
   for (int i = 0; i < BMS_BANK_COUNT; i++) {
     uint16_t rawVoltages[12];
@@ -48,7 +49,7 @@ void BMSThread::threadWorker() {
   // Cell GPIO self test
   m_bus.WakeupBus();
   m_bus.SendCommand(LTC681xBus::BuildBroadcastBusCommand(StartSelfTestGpio(AdcMode::k7k, SelfTestMode::kSelfTest1)));
-  ThisThread::sleep_for(4);
+  ThisThread::sleep_for(4ms);
   m_bus.WakeupBus();
   for (int i = 0; i < BMS_BANK_COUNT; i++) {
     uint16_t rawVoltages[12];
@@ -67,7 +68,7 @@ void BMSThread::threadWorker() {
   printf("SELF TEST DONE \n");
 
   std::array<uint16_t, BMS_BANK_COUNT * BMS_BANK_CELL_COUNT> allVoltages;
-  std::array<std::optional<int8_t>, BMS_BANK_COUNT * BMS_BANK_TEMP_COUNT> allTemps;
+  std::array<int8_t, BMS_BANK_COUNT * BMS_BANK_TEMP_COUNT> allTemps;
   while (true) {
     m_bus.WakeupBus();
     
@@ -136,7 +137,7 @@ void BMSThread::threadWorker() {
       }
     }
 
-    ThisThread::sleep_for(100);
+    ThisThread::sleep_for(100ms);
   }
 }
 

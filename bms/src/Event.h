@@ -3,6 +3,7 @@
 #include "BmsConfig.h"
 
 #include <array>
+#include <cstdint>
 #include <optional>
 #include <stdint.h>
 
@@ -44,7 +45,7 @@ public:
 class TemperatureMeasurement : public BmsEvent {
 public:
   BmsEventType getType() const { return BmsEventType::TemperatureMeasurement; }
-  std::array<std::optional<int8_t>, BMS_BANK_COUNT * BMS_BANK_TEMP_COUNT> temperatureValues;
+  std::array<int8_t, BMS_BANK_COUNT * BMS_BANK_TEMP_COUNT> temperatureValues;
 };
 
 

@@ -10,6 +10,7 @@
 //#include "CANOptions.h"
 #include "LTC681xBus.h"
 #include "Event.h"
+#include <cstdint>
 
 // When car is off maybe one reading every 10 sec
 // when car is on 10 readings per second
@@ -96,9 +97,9 @@ int main() {
         printf("Temperatures: \n");
         for (int i = 0; i < BMS_BANK_COUNT; i++) {
           for(int j = 0; j < BMS_BANK_TEMP_COUNT; j++) {
-            auto val = converted->temperatureValues[(i * BMS_BANK_CELL_COUNT) + j];
-            if(val.has_value()) {
-              printf("%2d ", val.value());
+            int8_t val = converted->temperatureValues[(i * BMS_BANK_CELL_COUNT) + j];
+            if(val) {
+              printf("%2d ", val);
             } else {
               printf("XX ");
             }

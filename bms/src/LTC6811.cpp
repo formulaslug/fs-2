@@ -52,7 +52,7 @@ uint16_t *LTC6811::getVoltages() {
   m_bus.SendCommand(LTC681xBus::BuildAddressedBusCommand(cmd, m_id));
 
   // Wait 2 ms for ADC to finish
-  ThisThread::sleep_for(2); // TODO: Change
+  ThisThread::sleep_for(2ms); // TODO: Change
 
   // 4  * (Register of 6 Bytes + PEC)
   uint8_t rxbuf[8 * 4];
@@ -83,7 +83,7 @@ uint16_t *LTC6811::getGpio() {
   m_bus.SendCommand(LTC681xBus::BuildAddressedBusCommand(cmd, m_id));
 
   // Wait 15 ms for ADC to finish
-  ThisThread::sleep_for(5); // TODO: This could be done differently
+  ThisThread::sleep_for(5ms); // TODO: This could be done differently
 
   uint8_t rxbuf[8 * 2];
 
@@ -111,7 +111,7 @@ uint16_t *LTC6811::getGpioPin(GpioSelection pin) {
   m_bus.SendCommand(LTC681xBus::BuildAddressedBusCommand(cmd, m_id));
 
   // Wait 5 ms for ADC to finish
-  ThisThread::sleep_for(pin == GpioSelection::kAll ? 15 : 5); // TODO: Change to polling
+  ThisThread::sleep_for(pin == GpioSelection::kAll ? 15ms : 5ms); // TODO: Change to polling
 
   uint8_t rxbuf[8 * 2];
 

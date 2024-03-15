@@ -8,4 +8,4 @@
 //
 // voltage: voltage in mV
 // value: temp as unsigned byte
-std::optional<int8_t> convertTemp(uint16_t voltage);
+int8_t convertTemp(uint16_t voltage);

@@ -87,12 +87,18 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
   #define BMS_PIN_BMS_FLT p10
 #elif TARGET_NUCLEO_F303K8
   #define BMS_PIN_BMS_FLT PB_0
+#elif TARGET_NUCLEO_L432KC
+  #define BMS_PIN_BMS_FLT PB_7
 #else
   #error "Unknown board for BMS_PIN_BMS_FLT"
 #endif
 
 #endif
 
+
+
+
+/*
 // BMS fault latch
 //
 // Readback from BMS fault relay to be broadcasted on CAN bus
@@ -107,7 +113,11 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
 #endif
 
 #endif
+*/
 
+
+
+/*
 // IMD status input
 //
 // Reads PWM output from IMD board
@@ -122,7 +132,11 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
 #endif
 
 #endif
+*/
 
+
+
+/*
 // IMD fault latch
 //
 // Readback from IMD fault relay to be broadcasted on CAN bus
@@ -137,6 +151,9 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
 #endif
 
 #endif
+*/
+
+
 
 // Charger output
 //
@@ -147,6 +164,8 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
   #define BMS_PIN_CHARGER_CONTROL p11
 #elif TARGET_NUCLEO_F303K8
   #define BMS_PIN_CHARGER_CONTROL PB_1
+#elif TARGET_NUCLEO_L432KC
+  #define BMS_PIN_CHARGER_CONTROL PA_9
 #else
   #error "Unknown board for BMS_PIN_CHARGER_CONTROL"
 #endif
@@ -162,6 +181,8 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
   #define BMS_PIN_SIG_CURRENT p15
 #elif TARGET_NUCLEO_F303K8
   #define BMS_PIN_SIG_CURRENT PA_0
+#elif TARGET_NUCLEO_L432KC
+  #define BMS_PIN_SIG_CURRENT PA_1
 #else
   #error "Unknown board for BMS_PIN_SIG_CURRENT"
 #endif
@@ -180,6 +201,8 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
   #define BMS_PIN_SPI_MOSI p5
 #elif TARGET_NUCLEO_F303K8
   #define BMS_PIN_SPI_MOSI PA_7
+#elif TARGET_NUCLEO_L432KC
+  #define BMS_PIN_SPI_MOSI PB_5
 #else
   #error "Unknown board for BMS_PIN_SPI_MOSI"
 #endif
@@ -193,6 +216,8 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
   #define BMS_PIN_SPI_MISO p6
 #elif TARGET_NUCLEO_F303K8
   #define BMS_PIN_SPI_MISO PA_6
+#elif TARGET_NUCLEO_L432KC
+  #define BMS_PIN_SPI_MISO PB_4
 #else
   #error "Unknown board for BMS_PIN_SPI_MISO"
 #endif
@@ -206,6 +231,8 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
   #define BMS_PIN_SPI_SCLK p7
 #elif TARGET_NUCLEO_F303K8
   #define BMS_PIN_SPI_SCLK PA_5
+#elif TARGET_NUCLEO_L432KC
+  #define BMS_PIN_SPI_SCLK PB_3
 #else
   #error "Unknown board for BMS_PIN_SPI_SCLK"
 #endif
@@ -218,6 +245,8 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
 #ifdef TARGET_LPC1768
   #define BMS_PIN_SPI_SSEL p8
 #elif TARGET_NUCLEO_F303K8
+  #define BMS_PIN_SPI_SSEL PA_4
+#elif TARGET_NUCLEO_L432KC
   #define BMS_PIN_SPI_SSEL PA_4
 #else
   #error "Unknown board for BMS_PIN_SPI_SSEL"
@@ -237,6 +266,8 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
   #define BMS_PIN_CAN_TX p29
 #elif TARGET_NUCLEO_F303K8
   #define BMS_PIN_CAN_TX PA_12
+#elif TARGET_NUCLEO_L432KC
+  #define BMS_PIN_CAN_TX PA_12
 #else
   #error "Unknown board for BMS_PIN_CAN_TX"
 #endif
@@ -249,6 +280,8 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
 #ifdef TARGET_LPC1768
   #define BMS_PIN_CAN_RX p30
 #elif TARGET_NUCLEO_F303K8
+  #define BMS_PIN_CAN_RX PA_11
+#elif TARGET_NUCLEO_L432KC
   #define BMS_PIN_CAN_RX PA_11
 #else
   #error "Unknown board for BMS_PIN_CAN_RX"

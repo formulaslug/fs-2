@@ -4,6 +4,7 @@
 #include "LTC681xCommand.h"
 #include "ThisThread.h"
 #include <cstdint>
+#include <cstdio>
 
 BMSThread::BMSThread(LTC681xBus& bus, unsigned int frequency, std::vector<Queue<BmsEvent, mailboxSize>*> mailboxes) : m_bus(bus), mailboxes(mailboxes) {
   m_delay = 1000 / frequency;
@@ -20,12 +21,15 @@ BMSThread::BMSThread(LTC681xBus& bus, unsigned int frequency, std::vector<Queue<
 
 void BMSThread::threadWorker() {
   // Perform self tests
-
+  
   // Cell Voltage self test
   m_bus.WakeupBus();
+  printf("wakeup1\n");
   m_bus.SendCommand(LTC681xBus::BuildBroadcastBusCommand(StartSelfTestCellVoltage(AdcMode::k7k, SelfTestMode::kSelfTest1)));
+  printf("Send Command\n");
   ThisThread::sleep_for(4ms);
   m_bus.WakeupBus();
+  printf("wakeup2\n");
   for (int i = 0; i < BMS_BANK_COUNT; i++) {
     uint16_t rawVoltages[12];
     if(m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupA(), i), (uint8_t*)rawVoltages) != LTC681xBus::LTC681xBusStatus::Ok) {
@@ -40,6 +44,8 @@ void BMSThread::threadWorker() {
     if(m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupD(), i), (uint8_t*)rawVoltages + 18) != LTC681xBus::LTC681xBusStatus::Ok) {
       printf("Things are not okay. SelfTestVoltageD\n");
     }
+
+    printf("beep\n");
 
     for (int j = 0; j < 12; j++) {
       printf("AXST %2d: %4x\n", j, rawVoltages[i]);

@@ -34,6 +34,7 @@ static int8_t linearInterpolateSegment(ConversionPoint low,
 //
 // voltage: voltage in mV
 // value: temp as unsigned byte
+// @return: Returns a temperature in degrees celsius, -127 indicates error.
 int8_t convertTemp(uint16_t voltage) {
   for (unsigned int i = 0; i < tempLookupTableSize; i++) {
     if (voltage > tempLookupTable[i].voltage) {
@@ -46,5 +47,5 @@ int8_t convertTemp(uint16_t voltage) {
   }
 
   // Fallback value
-  return {};
+  return -127;
 }

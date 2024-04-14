@@ -45,8 +45,6 @@ void BMSThread::threadWorker() {
       printf("Things are not okay. SelfTestVoltageD\n");
     }
 
-    printf("beep\n");
-
     for (int j = 0; j < 12; j++) {
       printf("AXST %2d: %4x\n", j, rawVoltages[i]);
     }

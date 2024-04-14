@@ -200,9 +200,9 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
 #ifdef TARGET_LPC1768
   #define BMS_PIN_SPI_MOSI p5
 #elif TARGET_NUCLEO_F303K8
-  #define BMS_PIN_SPI_MOSI PA_7
+  #define BMS_PIN_SPI_MOSI D11
 #elif TARGET_NUCLEO_L432KC
-  #define BMS_PIN_SPI_MOSI PB_5
+  #define BMS_PIN_SPI_MOSI D11
 #else
   #error "Unknown board for BMS_PIN_SPI_MOSI"
 #endif
@@ -215,9 +215,9 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
 #ifdef TARGET_LPC1768
   #define BMS_PIN_SPI_MISO p6
 #elif TARGET_NUCLEO_F303K8
-  #define BMS_PIN_SPI_MISO PA_6
+  #define BMS_PIN_SPI_MISO D12
 #elif TARGET_NUCLEO_L432KC
-  #define BMS_PIN_SPI_MISO PB_4
+  #define BMS_PIN_SPI_MISO D12
 #else
   #error "Unknown board for BMS_PIN_SPI_MISO"
 #endif
@@ -230,9 +230,9 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
 #ifdef TARGET_LPC1768
   #define BMS_PIN_SPI_SCLK p7
 #elif TARGET_NUCLEO_F303K8
-  #define BMS_PIN_SPI_SCLK PA_5
+  #define BMS_PIN_SPI_SCLK D13
 #elif TARGET_NUCLEO_L432KC
-  #define BMS_PIN_SPI_SCLK PB_3
+  #define BMS_PIN_SPI_SCLK D13
 #else
   #error "Unknown board for BMS_PIN_SPI_SCLK"
 #endif
@@ -245,9 +245,9 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
 #ifdef TARGET_LPC1768
   #define BMS_PIN_SPI_SSEL p8
 #elif TARGET_NUCLEO_F303K8
-  #define BMS_PIN_SPI_SSEL PA_4
+  #define BMS_PIN_SPI_SSEL A3
 #elif TARGET_NUCLEO_L432KC
-  #define BMS_PIN_SPI_SSEL PA_4
+  #define BMS_PIN_SPI_SSEL A3
 #else
   #error "Unknown board for BMS_PIN_SPI_SSEL"
 #endif

@@ -37,11 +37,15 @@ CAN *canBus;
 DigitalOut *bmsFault;
 DigitalOut *chargerControl;
 
+DigitalOut trigger(PB_6);
+
 void initIO();
 
 int main() {
   // Init all io pins
   initIO();
+
+  trigger = 0;
 
   canBus->write(BMSCellStartup());
 
@@ -54,6 +58,7 @@ int main() {
   // BMS_PIN_SPI_SCLK); DigitalOut cs(BMS_PIN_SPI_SSEL);
 
   spiDriver->format(8, 0);
+  //spiDriver->frequency(1250000);
   auto ltcBus = LTC681xParallelBus(spiDriver);
 
   auto canMailbox = new BmsEventMailbox();
@@ -73,26 +78,210 @@ int main() {
       LTC681xBus::BuildBroadcastBusCommand(WriteConfigurationGroupA());
   uint8_t statusOn[6] = {0x78, 0x00, 0x00, 0x00, 0x00, 0x00};
   uint8_t statusOff[6] = {0xf8, 0x00, 0x00, 0x00, 0x00, 0x00};
-  for (int i = 0; i < 4; i++) {
-    ltcBus.WakeupBus();
-    ltcBus.SendDataCommand(ledCmd, statusOn);
-    ThisThread::sleep_for(500ms);
-    ltcBus.WakeupBus();
-    ltcBus.SendDataCommand(ledCmd, statusOff);
-    ThisThread::sleep_for(500ms);
-  }
 
-  while(1);
+  // while(1);
 
   std::array<uint16_t, BMS_BANK_COUNT * BMS_BANK_CELL_COUNT> allVoltages;
   ltcBus.WakeupBus();
   for (int i = 0; i < BMS_BANK_COUNT; i++) {
-    if (ltcBus.PollAdcCompletion(LTC681xBus::BuildAddressedBusCommand(
-            PollADCStatus(), 0)) == LTC681xBus::LTC681xBusStatus::PollTimeout) {
-      printf("Poll timeout.\n");
-    } else {
-      printf("Poll OK.\n");
+    // if (ltcBus.PollAdcCompletion(LTC681xBus::BuildAddressedBusCommand(
+    //         PollADCStatus(), 0)) ==
+    //         LTC681xBus::LTC681xBusStatus::PollTimeout) {
+    //   printf("Poll timeout.\n");
+    // } else {
+    //   printf("Poll OK.\n");
+    // }
+
+    trigger = 1;
+    ThisThread::sleep_for(1ms);
+    trigger = 0;
+
+    // ltcBus.WakeupBus();
+    // printf("wakeup1\n");
+    // ltcBus.SendCommand(LTC681xBus::BuildBroadcastBusCommand(
+    //     StartSelfTestCellVoltage(AdcMode::k7k, SelfTestMode::kSelfTest1)));
+    // printf("Send Command\n");
+    // ThisThread::sleep_for(4ms);
+    // ltcBus.WakeupBus();
+    // printf("wakeup2\n");
+    // for (int i = 0; i < BMS_BANK_COUNT; i++) {
+    //   uint16_t rawVoltages[12];
+    //   if (ltcBus.SendReadCommand(
+    //           LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupA(), i),
+    //           (uint8_t *)rawVoltages) != LTC681xBus::LTC681xBusStatus::Ok) {
+    //     printf("Things are not okay. SelfTestVoltageA\n");
+    //   }
+    //   if (ltcBus.SendReadCommand(
+    //           LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupB(), i),
+    //           (uint8_t *)rawVoltages + 6) != LTC681xBus::LTC681xBusStatus::Ok) {
+    //     printf("Things are not okay. SelfTestVoltageB\n");
+    //   }
+    //   if (ltcBus.SendReadCommand(
+    //           LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupC(), i),
+    //           (uint8_t *)rawVoltages + 12) !=
+    //       LTC681xBus::LTC681xBusStatus::Ok) {
+    //     printf("Things are not okay. SelfTestVoltageC\n");
+    //   }
+    //   if (ltcBus.SendReadCommand(
+    //           LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupD(), i),
+    //           (uint8_t *)rawVoltages + 18) !=
+    //       LTC681xBus::LTC681xBusStatus::Ok) {
+    //     printf("Things are not okay. SelfTestVoltageD\n");
+    //   }
+
+    //   for (int j = 0; j < 12; j++) {
+    //     printf("AXST %2d: %4x\n", j, rawVoltages[i]);
+    //   }
+    // }
+
+    // for (int i = 0; i < 4; i++) {
+    //   ltcBus.WakeupBus();
+    //   ltcBus.SendDataCommand(ledCmd, statusOn);
+    //   ThisThread::sleep_for(100ms);
+    //   ltcBus.WakeupBus();
+    //   ltcBus.SendDataCommand(ledCmd, statusOff);
+    //   ThisThread::sleep_for(100ms);
+    // }
+
+    // auto startAdcCmd =
+    //     StartCellVoltageADC(AdcMode::k7k, false, CellSelection::kAll);
+    // if (ltcBus.SendCommand(LTC681xBus::BuildBroadcastBusCommand(startAdcCmd)) !=
+    //     LTC681xBus::LTC681xBusStatus::Ok) {
+    //   printf("Things are not okay. StartADC\n");
+    // }
+
+    // // Read back values from all chips
+    // for (int i = 0; i < BMS_BANK_COUNT; i++) {
+    //   if (ltcBus.PollAdcCompletion(
+    //           LTC681xBus::BuildAddressedBusCommand(PollADCStatus(), 0)) ==
+    //       LTC681xBus::LTC681xBusStatus::PollTimeout) {
+    //     printf("Poll timeout.\n");
+    //   } else {
+    //     printf("Poll OK.\n");
+    //   }
+
+    //   uint16_t rawVoltages[12];
+    //   if (ltcBus.SendReadCommand(
+    //           LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupA(), i),
+    //           (uint8_t *)rawVoltages) != LTC681xBus::LTC681xBusStatus::Ok) {
+    //     printf("Things are not okay. VoltageA\n");
+    //   }
+    //   if (ltcBus.SendReadCommand(
+    //           LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupB(), i),
+    //           (uint8_t *)rawVoltages + 6) != LTC681xBus::LTC681xBusStatus::Ok) {
+    //     printf("Things are not okay. VoltageB\n");
+    //   }
+    //   if (ltcBus.SendReadCommand(
+    //           LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupC(), i),
+    //           (uint8_t *)rawVoltages + 12) !=
+    //       LTC681xBus::LTC681xBusStatus::Ok) {
+    //     printf("Things are not okay. VoltageC\n");
+    //   }
+    //   if (ltcBus.SendReadCommand(
+    //           LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupD(), i),
+    //           (uint8_t *)rawVoltages + 18) !=
+    //       LTC681xBus::LTC681xBusStatus::Ok) {
+    //     printf("Things are not okay. VoltageD\n");
+    //   }
+
+    //   for (int j = 0; j < 12; j++) {
+    //     // Endianness of the protocol allows a simple cast :-)
+    //     uint16_t voltage = rawVoltages[j] / 10;
+
+    //     int index = BMS_CELL_MAP[j];
+    //     if (index != -1) {
+    //       allVoltages[(BMS_BANK_CELL_COUNT * i) + index] = voltage;
+    //     }
+    //   }
+    // }
+
+    // for (int i = 0; i < BMS_BANK_COUNT; i++) {
+    //   printf("Bank %d V: ", i);
+    //   for (int j = 0; j < BMS_BANK_CELL_COUNT; j++) {
+    //     printf("%d, ", allVoltages[i * BMS_BANK_CELL_COUNT + j]);
+    //   }
+    //   printf("\n");
+    // }
+
+
+    while (true) {
+    ltcBus.WakeupBus();
+    
+    // Set all status lights high
+    // TODO: This should be in some sort of config class
+    uint8_t statusOn[6] = { 0x78, 0x00, 0x00, 0x00, 0x00, 0x00 };
+    uint8_t statusOff[6] = { 0xf8, 0x00, 0x00, 0x00, 0x00, 0x00 };
+    auto ledCmd = LTC681xBus::BuildBroadcastBusCommand(WriteConfigurationGroupA());
+    ltcBus.SendDataCommand(ledCmd, statusOn);
+
+    // Start ADC on all chips
+    auto startAdcCmd = StartCellVoltageADC(AdcMode::k7k, false, CellSelection::kAll);
+    if(ltcBus.SendCommand(LTC681xBus::BuildBroadcastBusCommand(startAdcCmd)) != LTC681xBus::LTC681xBusStatus::Ok) {
+      printf("Things are not okay. StartADC\n");
     }
+
+    // Read back values from all chips
+    for (int i = 0; i < BMS_BANK_COUNT; i++) {
+      if(ltcBus.PollAdcCompletion(LTC681xBus::BuildAddressedBusCommand(PollADCStatus(), 0)) == LTC681xBus::LTC681xBusStatus::PollTimeout) {
+        printf("Poll timeout.\n");
+      } else {
+        printf("Poll OK.\n");
+      }
+
+      uint16_t rawVoltages[12];
+      if(ltcBus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupA(), i), (uint8_t*)rawVoltages) != LTC681xBus::LTC681xBusStatus::Ok) {
+        printf("Things are not okay. VoltageA\n");
+      }
+      if(ltcBus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupB(), i), (uint8_t*)rawVoltages + 6) != LTC681xBus::LTC681xBusStatus::Ok) {
+        printf("Things are not okay. VoltageB\n");
+      }
+      if(ltcBus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupC(), i), (uint8_t*)rawVoltages + 12) != LTC681xBus::LTC681xBusStatus::Ok) {
+        printf("Things are not okay. VoltageC\n");
+      }
+      if(ltcBus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupD(), i), (uint8_t*)rawVoltages + 18) != LTC681xBus::LTC681xBusStatus::Ok) {
+        printf("Things are not okay. VoltageD\n");
+      }
+
+      for (int j = 0; j < 12; j++) {
+        // Endianness of the protocol allows a simple cast :-)
+        uint16_t voltage = rawVoltages[j] / 10;
+
+        int index = BMS_CELL_MAP[j];
+        if (index != -1) {
+          allVoltages[(BMS_BANK_CELL_COUNT * i) + index] = voltage;
+        }
+      }
+    }
+
+    ltcBus.SendDataCommand(ledCmd, statusOff);
+
+
+    for (int i = 0; i < BMS_BANK_COUNT; i++) {
+      printf("Bank %d V: ", i);
+      for (int j = 0; j < BMS_BANK_CELL_COUNT; j++) {
+        printf("%d, ", allVoltages[i * BMS_BANK_CELL_COUNT + j]);
+      }
+      printf("\n");
+    }
+
+
+    ThisThread::sleep_for(500ms);
+  }
+
+
+
+
+
+
+
+
+    while (1);
+
+
+
+
+
+
 
     uint16_t rawVoltages[12];
     if (ltcBus.SendReadCommand(
@@ -100,6 +289,7 @@ int main() {
             (uint8_t *)rawVoltages) != LTC681xBus::LTC681xBusStatus::Ok) {
       printf("Things are not okay. VoltageA\n");
     }
+
     if (ltcBus.SendReadCommand(
             LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupB(), i),
             (uint8_t *)rawVoltages + 6) != LTC681xBus::LTC681xBusStatus::Ok) {
@@ -127,19 +317,26 @@ int main() {
     }
   }
 
-  for (int i = 0; i < BMS_BANK_COUNT * BMS_BANK_CELL_COUNT; i++) {
-    printf("V: %d\n", allVoltages[i]);
+  for (int i = 0; i < BMS_BANK_COUNT; i++) {
+    printf("Bank %d V: ", i);
+    for (int j = 0; j < BMS_BANK_CELL_COUNT; j++) {
+      printf("%d, ", allVoltages[i * BMS_BANK_CELL_COUNT + j]);
+    }
+    printf("\n");
   }
-
 
   printf("\n");
   uint8_t configGroup;
-  ltcBus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadConfigurationGroupA(), 0), &configGroup);
+  ltcBus.SendReadCommand(
+      LTC681xBus::BuildAddressedBusCommand(ReadConfigurationGroupA(), 0),
+      &configGroup);
   printf("config group: %d \n", configGroup);
 
-  //Thread bmsThreadThread;
+  // while (1);
+
+  // Thread bmsThreadThread;
   BMSThread bmsThread(ltcBus, 1, mailboxes);
-  //bmsThreadThread.start(callback(&BMSThread::startThread, &bmsThread));
+  // bmsThreadThread.start(callback(&BMSThread::startThread, &bmsThread));
 
   DigitalOut led(LED1);
   // Flash LEDs to indicate startup
@@ -160,55 +357,40 @@ int main() {
   Deselect the device
   cs = 1;*/
 
-  while (true) {
+  // while (true) {
 
-    // printf("Before Get");
-    auto event = canMailbox->get(10);
-    // printf("After Get");
-    if (event.status == osEventMessage) {
-      BmsEvent *msg = (BmsEvent *)event.value.p;
+  // Perform self tests
 
-      switch (msg->getType()) {
-      case BmsEventType::VoltageMeasurement: {
-        auto converted = static_cast<VoltageMeasurement *>(msg);
+  // Cell Voltage self test
+  //   ltcBus.WakeupBus();
+  //   printf("wakeup1\n");
+  //   ltcBus.SendCommand(LTC681xBus::BuildBroadcastBusCommand(StartSelfTestCellVoltage(AdcMode::k7k,
+  //   SelfTestMode::kSelfTest1))); printf("Send Command\n");
+  //   ThisThread::sleep_for(4ms);
+  //   ltcBus.WakeupBus();
+  //   printf("wakeup2\n");
+  //   for (int i = 0; i < BMS_BANK_COUNT; i++) {
+  //     uint16_t rawVoltages[12];
+  //     if(ltcBus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupA(),
+  //     i), (uint8_t*)rawVoltages) != LTC681xBus::LTC681xBusStatus::Ok) {
+  //       printf("Things are not okay. SelfTestVoltageA\n");
+  //     }
+  //     if(ltcBus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupB(),
+  //     i), (uint8_t*)rawVoltages + 6) != LTC681xBus::LTC681xBusStatus::Ok) {
+  //       printf("Things are not okay. SelfTestVoltageB\n");
+  //     }
+  //     if(ltcBus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupC(),
+  //     i), (uint8_t*)rawVoltages + 12) != LTC681xBus::LTC681xBusStatus::Ok) {
+  //       printf("Things are not okay. SelfTestVoltageC\n");
+  //     }
+  //     if(ltcBus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupD(),
+  //     i), (uint8_t*)rawVoltages + 18) != LTC681xBus::LTC681xBusStatus::Ok) {
+  //       printf("Things are not okay. SelfTestVoltageD\n");
+  //     }
 
-        printf("Voltages: \n");
-        for (int i = 0; i < BMS_BANK_COUNT; i++) {
-          for (int j = 0; j < BMS_BANK_CELL_COUNT; j++) {
-            printf("%4dmV ",
-                   converted->voltageValues[(i * BMS_BANK_CELL_COUNT) + j]);
-          }
-          printf("\n");
-        }
-        converted->~VoltageMeasurement();
-        break;
-      }
-      case BmsEventType::TemperatureMeasurement: {
-        auto converted = static_cast<TemperatureMeasurement *>(msg);
-
-        printf("Temperatures: \n");
-        for (int i = 0; i < BMS_BANK_COUNT; i++) {
-          for (int j = 0; j < BMS_BANK_TEMP_COUNT; j++) {
-            int8_t val =
-                converted->temperatureValues[(i * BMS_BANK_CELL_COUNT) + j];
-            if (val) {
-              printf("%2d ", val);
-            } else {
-              printf("XX ");
-            }
-          }
-          printf("\n");
-        }
-        converted->~TemperatureMeasurement();
-        break;
-      }
-      default:
-        break;
-      }
-      delete msg;
-    }
-  }
-  //bmsThreadThread.join();
+  //   }
+  //}
+  // bmsThreadThread.join();
 }
 
 void initIO() {

@@ -8,6 +8,10 @@
         "NUCLEO_F303K8": {
             "platform.stdio-baud-rate": 115200,
             "platform.default-serial-baud-rate": 115200
+        },
+        "NUCLEO_L432KC": {
+            "platform.stdio-baud-rate": 115200,
+            "platform.default-serial-baud-rate": 115200
         }
     }
 }

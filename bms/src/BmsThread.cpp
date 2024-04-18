@@ -6,14 +6,16 @@
 #include <cstdint>
 #include <cstdio>
 
-BMSThread::BMSThread(LTC681xBus& bus, unsigned int frequency, std::vector<Queue<BmsEvent, mailboxSize>*> mailboxes) : m_bus(bus), mailboxes(mailboxes) {
+BMSThread::BMSThread(LTC681xBus &bus, unsigned int frequency,
+                     std::vector<Queue<BmsEvent, mailboxSize> *> mailboxes)
+    : m_bus(bus), mailboxes(mailboxes) {
   m_delay = 1000 / frequency;
   for (int i = 0; i < BMS_BANK_COUNT; i++) {
     m_chips.push_back(LTC6811(bus, i));
   }
   for (int i = 0; i < BMS_BANK_COUNT; i++) {
-    //m_chips[i].getConfig().gpio5 = LTC6811::GPIOOutputState::kLow;
-    //m_chips[i].getConfig().gpio4 = LTC6811::GPIOOutputState::kPassive;
+    // m_chips[i].getConfig().gpio5 = LTC6811::GPIOOutputState::kLow;
+    // m_chips[i].getConfig().gpio4 = LTC6811::GPIOOutputState::kPassive;
 
     m_chips[i].updateConfig();
   }
@@ -21,27 +23,38 @@ BMSThread::BMSThread(LTC681xBus& bus, unsigned int frequency, std::vector<Queue<
 
 void BMSThread::threadWorker() {
   // Perform self tests
-  
+
   // Cell Voltage self test
   m_bus.WakeupBus();
   printf("wakeup1\n");
-  m_bus.SendCommand(LTC681xBus::BuildBroadcastBusCommand(StartSelfTestCellVoltage(AdcMode::k7k, SelfTestMode::kSelfTest1)));
+  m_bus.SendCommand(LTC681xBus::BuildBroadcastBusCommand(
+      StartSelfTestCellVoltage(AdcMode::k7k, SelfTestMode::kSelfTest1)));
   printf("Send Command\n");
   ThisThread::sleep_for(4ms);
   m_bus.WakeupBus();
   printf("wakeup2\n");
   for (int i = 0; i < BMS_BANK_COUNT; i++) {
     uint16_t rawVoltages[12];
-    if(m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupA(), i), (uint8_t*)rawVoltages) != LTC681xBus::LTC681xBusStatus::Ok) {
+    uint16_t rawTemps[12];
+
+    if (m_bus.SendReadCommand(
+            LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupA(), i),
+            (uint8_t *)rawVoltages) != LTC681xBus::LTC681xBusStatus::Ok) {
       printf("Things are not okay. SelfTestVoltageA\n");
     }
-    if(m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupB(), i), (uint8_t*)rawVoltages + 6) != LTC681xBus::LTC681xBusStatus::Ok) {
+    if (m_bus.SendReadCommand(
+            LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupB(), i),
+            (uint8_t *)rawVoltages + 6) != LTC681xBus::LTC681xBusStatus::Ok) {
       printf("Things are not okay. SelfTestVoltageB\n");
     }
-    if(m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupC(), i), (uint8_t*)rawVoltages + 12) != LTC681xBus::LTC681xBusStatus::Ok) {
+    if (m_bus.SendReadCommand(
+            LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupC(), i),
+            (uint8_t *)rawVoltages + 12) != LTC681xBus::LTC681xBusStatus::Ok) {
       printf("Things are not okay. SelfTestVoltageC\n");
     }
-    if(m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupD(), i), (uint8_t*)rawVoltages + 18) != LTC681xBus::LTC681xBusStatus::Ok) {
+    if (m_bus.SendReadCommand(
+            LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupD(), i),
+            (uint8_t *)rawVoltages + 18) != LTC681xBus::LTC681xBusStatus::Ok) {
       printf("Things are not okay. SelfTestVoltageD\n");
     }
 
@@ -54,15 +67,20 @@ void BMSThread::threadWorker() {
 
   // Cell GPIO self test
   m_bus.WakeupBus();
-  m_bus.SendCommand(LTC681xBus::BuildBroadcastBusCommand(StartSelfTestGpio(AdcMode::k7k, SelfTestMode::kSelfTest1)));
+  m_bus.SendCommand(LTC681xBus::BuildBroadcastBusCommand(
+      StartSelfTestGpio(AdcMode::k7k, SelfTestMode::kSelfTest1)));
   ThisThread::sleep_for(4ms);
   m_bus.WakeupBus();
   for (int i = 0; i < BMS_BANK_COUNT; i++) {
     uint16_t rawVoltages[12];
-    if(m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupA(), i), (uint8_t*)rawVoltages) != LTC681xBus::LTC681xBusStatus::Ok) {
+    if (m_bus.SendReadCommand(
+            LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupA(), i),
+            (uint8_t *)rawVoltages) != LTC681xBus::LTC681xBusStatus::Ok) {
       printf("Things are not okay. SelfTestVoltageA\n");
     }
-    if(m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupB(), i), (uint8_t*)rawVoltages + 6) != LTC681xBus::LTC681xBusStatus::Ok) {
+    if (m_bus.SendReadCommand(
+            LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupB(), i),
+            (uint8_t *)rawVoltages + 6) != LTC681xBus::LTC681xBusStatus::Ok) {
       printf("Things are not okay. SelfTestVoltageB\n");
     }
 
@@ -76,72 +94,155 @@ void BMSThread::threadWorker() {
   std::array<uint16_t, BMS_BANK_COUNT * BMS_BANK_CELL_COUNT> allVoltages;
   std::array<int8_t, BMS_BANK_COUNT * BMS_BANK_TEMP_COUNT> allTemps;
   while (true) {
+    printf("\n \n");
     m_bus.WakeupBus();
-    
+
     // Set all status lights high
     // TODO: This should be in some sort of config class
-    uint8_t statusOn[6] = { 0x78, 0x00, 0x00, 0x00, 0x00, 0x00 };
-    uint8_t statusOff[6] = { 0xf8, 0x00, 0x00, 0x00, 0x00, 0x00 };
-    auto ledCmd = LTC681xBus::BuildBroadcastBusCommand(WriteConfigurationGroupA());
+    uint8_t statusOn[6] = {0x78, 0x00, 0x00, 0x00, 0x00, 0x00};
+    uint8_t statusOff[6] = {0xf8, 0x00, 0x00, 0x00, 0x00, 0x00};
+    auto ledCmd =
+        LTC681xBus::BuildBroadcastBusCommand(WriteConfigurationGroupA());
     m_bus.SendDataCommand(ledCmd, statusOn);
 
     // Start ADC on all chips
-    auto startAdcCmd = StartCellVoltageADC(AdcMode::k7k, false, CellSelection::kAll);
-    if(m_bus.SendCommand(LTC681xBus::BuildBroadcastBusCommand(startAdcCmd)) != LTC681xBus::LTC681xBusStatus::Ok) {
+    auto startAdcCmd =
+        StartCellVoltageADC(AdcMode::k7k, false, CellSelection::kAll);
+    if (m_bus.SendCommand(LTC681xBus::BuildBroadcastBusCommand(startAdcCmd)) !=
+        LTC681xBus::LTC681xBusStatus::Ok) {
       printf("Things are not okay. StartADC\n");
     }
 
     // Read back values from all chips
     for (int i = 0; i < BMS_BANK_COUNT; i++) {
-      if(m_bus.PollAdcCompletion(LTC681xBus::BuildAddressedBusCommand(PollADCStatus(), 0)) == LTC681xBus::LTC681xBusStatus::PollTimeout) {
+      if (m_bus.PollAdcCompletion(
+              LTC681xBus::BuildAddressedBusCommand(PollADCStatus(), 0)) ==
+          LTC681xBus::LTC681xBusStatus::PollTimeout) {
         printf("Poll timeout.\n");
       } else {
         printf("Poll OK.\n");
       }
 
       uint16_t rawVoltages[12];
-      if(m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupA(), i), (uint8_t*)rawVoltages) != LTC681xBus::LTC681xBusStatus::Ok) {
+      uint16_t rawTemps[12];
+
+      if (m_bus.SendReadCommand(
+              LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupA(), i),
+              (uint8_t *)rawVoltages) != LTC681xBus::LTC681xBusStatus::Ok) {
         printf("Things are not okay. VoltageA\n");
       }
-      if(m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupB(), i), (uint8_t*)rawVoltages + 6) != LTC681xBus::LTC681xBusStatus::Ok) {
+      if (m_bus.SendReadCommand(
+              LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupB(), i),
+              (uint8_t *)rawVoltages + 6) != LTC681xBus::LTC681xBusStatus::Ok) {
         printf("Things are not okay. VoltageB\n");
       }
-      if(m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupC(), i), (uint8_t*)rawVoltages + 12) != LTC681xBus::LTC681xBusStatus::Ok) {
+      if (m_bus.SendReadCommand(
+              LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupC(), i),
+              (uint8_t *)rawVoltages + 12) !=
+          LTC681xBus::LTC681xBusStatus::Ok) {
         printf("Things are not okay. VoltageC\n");
       }
-      if(m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupD(), i), (uint8_t*)rawVoltages + 18) != LTC681xBus::LTC681xBusStatus::Ok) {
+      if (m_bus.SendReadCommand(
+              LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupD(), i),
+              (uint8_t *)rawVoltages + 18) !=
+          LTC681xBus::LTC681xBusStatus::Ok) {
         printf("Things are not okay. VoltageD\n");
+      }
+
+      // MUX get temp from each cell
+      for (uint8_t j = 0; j < BMS_BANK_CELL_COUNT; j++) {
+        uint8_t muxSelect[6] = {
+            static_cast<uint8_t>(0b01000000 | ((j & 0b111) << 3)), // left most bit controls LED :/ (0 is on)
+            0x00,
+            0x00,
+            0x00,
+            0x00,
+            0x00};
+
+        m_bus.SendDataCommand(
+            LTC681xBus::BuildAddressedBusCommand(WriteConfigurationGroupA(), i),
+            muxSelect);
+
+        auto gpioADCcmd =
+            StartGpioADC(AdcMode::k7k, GpioSelection::kAll);
+        if (m_bus.SendCommand(LTC681xBus::BuildAddressedBusCommand(
+                gpioADCcmd, i)) != LTC681xBus::LTC681xBusStatus::Ok) {
+          printf("Things are not okay. StartGPIO ADC\n");
+        }
+
+        ThisThread::sleep_for(15ms);
+
+        uint8_t rxbuf[8*2];
+
+        m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadAuxiliaryGroupA(), i), rxbuf);
+        m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadAuxiliaryGroupB(), i), rxbuf + 8);
+
+        uint16_t voltages[5];
+
+        for (unsigned int k = 0; k < sizeof(rxbuf); k++) {
+            // Skip over PEC
+            if (k % 8 == 6 || k % 8 == 7) continue;
+
+            // Skip over odd bytes
+            if (k % 2 == 1) continue;
+
+            // Wack shit to skip over PEC
+            voltages[(k / 2) - (k / 8)] = ((uint16_t)rxbuf[k]) | ((uint16_t)rxbuf[k + 1] << 8);
+        }
+        printf("Temp readings: ");
+        for (int k = 0; k < 16; k++) {
+            printf("%d, ", rxbuf[k]);
+        }
+        printf("\n");
+
+
+
+
+
+
+        // uint8_t tempTemp[6];
+
+        // m_bus.SendReadCommand(
+        //     LTC681xBus::BuildAddressedBusCommand(ReadAuxiliaryGroupA(), i),
+        //     tempTemp);
+        // printf("Temp readings: ");
+        // for (int k = 0; k < 6; k++) {
+        //     printf("%d, ", tempTemp[k]);
+        // }
+        // printf("\n");
+
       }
 
       for (int j = 0; j < 12; j++) {
         // Endianness of the protocol allows a simple cast :-)
         uint16_t voltage = rawVoltages[j] / 10;
+        uint16_t temp = rawTemps[j] / 10;
 
         int index = BMS_CELL_MAP[j];
         if (index != -1) {
           allVoltages[(BMS_BANK_CELL_COUNT * i) + index] = voltage;
-          
-          printf("%d: %d\n", index, voltage);
+          allTemps[(BMS_BANK_CELL_COUNT * i) + index] = temp;
+
+          //printf("%d: V: %d, T: %d\n", index, voltage, temp);
         }
       }
     }
 
     m_bus.SendDataCommand(ledCmd, statusOff);
 
-    for(auto mailbox : mailboxes) {
-      if(!mailbox->full()) {
+    for (auto mailbox : mailboxes) {
+      if (!mailbox->full()) {
         {
           auto msg = new VoltageMeasurement();
           msg->voltageValues = allVoltages;
-          mailbox->put((BmsEvent*) msg);
+          mailbox->put((BmsEvent *)msg);
         }
-        /*
+
         {
           auto msg = new TemperatureMeasurement();
           msg->temperatureValues = allTemps;
-          mailbox->put((BmsEvent*) msg);
+          mailbox->put((BmsEvent *)msg);
         }
-        */
       }
     }
 
@@ -149,8 +250,8 @@ void BMSThread::threadWorker() {
   }
 }
 
-void BMSThread::throwBmsFault()  {
+void BMSThread::throwBmsFault() {
   m_discharging = false;
-  //palClearLine(LINE_BMS_FLT);
-  //palSetLine(LINE_CHARGER_CONTROL);
+  // palClearLine(LINE_BMS_FLT);
+  // palSetLine(LINE_CHARGER_CONTROL);
 }

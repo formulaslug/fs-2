@@ -6,6 +6,8 @@
 #include <cstdint>
 #include <cstdio>
 
+#include "EnergusTempSensor.h"
+
 BMSThread::BMSThread(LTC681xBus &bus, unsigned int frequency,
                      std::vector<Queue<BmsEvent, mailboxSize> *> mailboxes)
     : m_bus(bus), mailboxes(mailboxes) {
@@ -124,7 +126,6 @@ void BMSThread::threadWorker() {
       }
 
       uint16_t rawVoltages[12];
-      uint16_t rawTemps[12];
 
       if (m_bus.SendReadCommand(
               LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupA(), i),
@@ -164,66 +165,37 @@ void BMSThread::threadWorker() {
             muxSelect);
 
         auto gpioADCcmd =
-            StartGpioADC(AdcMode::k7k, GpioSelection::kAll);
+            StartGpioADC(AdcMode::k7k, GpioSelection::k4);
         if (m_bus.SendCommand(LTC681xBus::BuildAddressedBusCommand(
                 gpioADCcmd, i)) != LTC681xBus::LTC681xBusStatus::Ok) {
           printf("Things are not okay. StartGPIO ADC\n");
         }
 
-        ThisThread::sleep_for(15ms);
+        ThisThread::sleep_for(5ms);
 
         uint8_t rxbuf[8*2];
 
         m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadAuxiliaryGroupA(), i), rxbuf);
         m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadAuxiliaryGroupB(), i), rxbuf + 8);
 
-        uint16_t voltages[5];
+        uint16_t tempVoltage = ((uint16_t)rxbuf[8]) | ((uint16_t)rxbuf[9] << 8);
 
-        for (unsigned int k = 0; k < sizeof(rxbuf); k++) {
-            // Skip over PEC
-            if (k % 8 == 6 || k % 8 == 7) continue;
+        int8_t temp = convertTemp(tempVoltage/10);
+        //printf("Temp: %d\n", temp);
+        allTemps[j] = temp;
 
-            // Skip over odd bytes
-            if (k % 2 == 1) continue;
-
-            // Wack shit to skip over PEC
-            voltages[(k / 2) - (k / 8)] = ((uint16_t)rxbuf[k]) | ((uint16_t)rxbuf[k + 1] << 8);
-        }
-        printf("Temp readings: ");
-        for (int k = 0; k < 16; k++) {
-            printf("%d, ", rxbuf[k]);
-        }
-        printf("\n");
-
-
-
-
-
-
-        // uint8_t tempTemp[6];
-
-        // m_bus.SendReadCommand(
-        //     LTC681xBus::BuildAddressedBusCommand(ReadAuxiliaryGroupA(), i),
-        //     tempTemp);
-        // printf("Temp readings: ");
-        // for (int k = 0; k < 6; k++) {
-        //     printf("%d, ", tempTemp[k]);
-        // }
-        // printf("\n");
 
       }
 
       for (int j = 0; j < 12; j++) {
         // Endianness of the protocol allows a simple cast :-)
         uint16_t voltage = rawVoltages[j] / 10;
-        uint16_t temp = rawTemps[j] / 10;
 
         int index = BMS_CELL_MAP[j];
         if (index != -1) {
           allVoltages[(BMS_BANK_CELL_COUNT * i) + index] = voltage;
-          allTemps[(BMS_BANK_CELL_COUNT * i) + index] = temp;
 
-          //printf("%d: V: %d, T: %d\n", index, voltage, temp);
+          //printf("%d: V: %d\n", index, voltage);
         }
       }
     }

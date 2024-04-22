@@ -101,11 +101,13 @@ void BMSThread::threadWorker() {
 
     // Set all status lights high
     // TODO: This should be in some sort of config class
-    uint8_t statusOn[6] = {0x78, 0x00, 0x00, 0x00, 0x00, 0x00};
-    uint8_t statusOff[6] = {0xf8, 0x00, 0x00, 0x00, 0x00, 0x00};
-    auto ledCmd =
-        LTC681xBus::BuildBroadcastBusCommand(WriteConfigurationGroupA());
-    m_bus.SendDataCommand(ledCmd, statusOn);
+    
+    for (int i = 0; i < BMS_BANK_COUNT; i++) {
+        LTC6811::Configuration& config = m_chips[i].getConfig();
+        config.gpio5 = LTC6811::GPIOOutputState::kLow;
+        m_chips[i].updateConfig();
+    }
+    
 
     // Start ADC on all chips
     auto startAdcCmd =
@@ -153,7 +155,9 @@ void BMSThread::threadWorker() {
       // MUX get temp from each cell
       for (uint8_t j = 0; j < BMS_BANK_CELL_COUNT; j++) {
         uint8_t muxSelect[6] = {
-            static_cast<uint8_t>(0b01000000 | ((j & 0b111) << 3)), // left most bit controls LED :/ (0 is on)
+            static_cast<uint8_t>(
+                0b01000000 |
+                ((j & 0b111) << 3)), // left most bit controls LED :/ (0 is on)
             0x00,
             0x00,
             0x00,
@@ -164,8 +168,7 @@ void BMSThread::threadWorker() {
             LTC681xBus::BuildAddressedBusCommand(WriteConfigurationGroupA(), i),
             muxSelect);
 
-        auto gpioADCcmd =
-            StartGpioADC(AdcMode::k7k, GpioSelection::k4);
+        auto gpioADCcmd = StartGpioADC(AdcMode::k7k, GpioSelection::k4);
         if (m_bus.SendCommand(LTC681xBus::BuildAddressedBusCommand(
                 gpioADCcmd, i)) != LTC681xBus::LTC681xBusStatus::Ok) {
           printf("Things are not okay. StartGPIO ADC\n");
@@ -173,18 +176,20 @@ void BMSThread::threadWorker() {
 
         ThisThread::sleep_for(5ms);
 
-        uint8_t rxbuf[8*2];
+        uint8_t rxbuf[8 * 2];
 
-        m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadAuxiliaryGroupA(), i), rxbuf);
-        m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadAuxiliaryGroupB(), i), rxbuf + 8);
+        m_bus.SendReadCommand(
+            LTC681xBus::BuildAddressedBusCommand(ReadAuxiliaryGroupA(), i),
+            rxbuf);
+        m_bus.SendReadCommand(
+            LTC681xBus::BuildAddressedBusCommand(ReadAuxiliaryGroupB(), i),
+            rxbuf + 8);
 
         uint16_t tempVoltage = ((uint16_t)rxbuf[8]) | ((uint16_t)rxbuf[9] << 8);
 
-        int8_t temp = convertTemp(tempVoltage/10);
-        //printf("Temp: %d\n", temp);
+        int8_t temp = convertTemp(tempVoltage / 10);
+        // printf("Temp: %d\n", temp);
         allTemps[j] = temp;
-
-
       }
 
       for (int j = 0; j < 12; j++) {
@@ -195,12 +200,77 @@ void BMSThread::threadWorker() {
         if (index != -1) {
           allVoltages[(BMS_BANK_CELL_COUNT * i) + index] = voltage;
 
-          //printf("%d: V: %d\n", index, voltage);
+          // printf("%d: V: %d\n", index, voltage);
         }
       }
     }
 
-    m_bus.SendDataCommand(ledCmd, statusOff);
+    uint16_t minVoltage = allVoltages[0];
+    uint16_t maxVoltage = 0;
+    for (int i = 0; i < BMS_BANK_COUNT * BMS_BANK_CELL_COUNT; i++) {
+      if (allVoltages[i] < minVoltage) {
+        minVoltage = allVoltages[i];
+      } else if (allVoltages[i] > maxVoltage) {
+        maxVoltage = allVoltages[i];
+      }
+    }
+
+    uint16_t minTemp = allTemps[0];
+    uint16_t maxTemp = 0;
+    for (int i = 0; i < BMS_BANK_COUNT * BMS_BANK_TEMP_COUNT; i++) {
+      if (allTemps[i] < minTemp) {
+        minTemp = allTemps[i];
+      } else if (allTemps[i] > maxTemp) {
+        maxTemp = allTemps[i];
+      }
+    }
+
+    if (minVoltage <= BMS_FAULT_VOLTAGE_THRESHOLD_LOW ||
+        maxVoltage >= BMS_FAULT_VOLTAGE_THRESHOLD_HIGH ||
+        minTemp <= BMS_FAULT_TEMP_THRESHOLD_LOW ||
+        maxTemp >= BMS_FAULT_TEMP_THRESHOLD_HIGH) {
+      throwBmsFault();
+    }
+
+    // TODO: DON'T FORGET TO REMOVE THE '!'
+    if (!m_discharging) {
+        for (int i = 0; i < BMS_BANK_COUNT; i++) {
+
+            uint8_t data[6] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+            for (int j = 0; j < BMS_BANK_CELL_COUNT; j++) {
+                uint16_t cellVoltage = allVoltages[i * BMS_BANK_CELL_COUNT + j];
+                if (cellVoltage >= BMS_BALANCE_THRESHOLD && cellVoltage >= minVoltage + BMS_DISCHARGE_THRESHOLD) { // If voltage is at least 3900mV and 15mV above min voltage, balance
+                    uint8_t pos = j + (j/4)*2;
+                    printf("j: %d, pos: %d\n", j, pos);
+                    data[pos/2] |= 0b1000 << ((pos%2 == 0) ? 4 : 0); 
+                } else {
+                    printf("cellV: %d\n", cellVoltage);
+                }
+            }
+
+            printf("balancing data: ");
+            for (int j = 0; j < 6; j++) {
+                printf("%x, ", data[j]);
+            }
+            printf("\n");
+
+            m_bus.SendDataCommand(
+                LTC681xBus::BuildAddressedBusCommand(WriteConfigurationGroupA(), i), data);
+        }
+    } else {
+        for (int i = 0; i < BMS_BANK_COUNT; i++) {
+
+            LTC6811::Configuration& config = m_chips[i].getConfig();
+            config.dischargeState.value = 0;
+            m_chips[i].updateConfig();
+        }
+    }
+
+    for (int i = 0; i < BMS_BANK_COUNT; i++) {
+        LTC6811::Configuration& config = m_chips[i].getConfig();
+        config.gpio5 = LTC6811::GPIOOutputState::kHigh;
+        m_chips[i].updateConfig();
+    }
 
     for (auto mailbox : mailboxes) {
       if (!mailbox->full()) {

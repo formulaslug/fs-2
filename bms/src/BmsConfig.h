@@ -72,7 +72,7 @@ extern DigitalOut* chargerControl;
 //
 // Units: millivolts
 #ifndef BMS_BALANCE_THRESHOLD
-#define BMS_BALANCE_THRESHOLD 3900
+#define BMS_BALANCE_THRESHOLD 3550
 #endif
 
 

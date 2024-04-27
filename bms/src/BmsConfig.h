@@ -68,11 +68,11 @@ extern DigitalOut* chargerControl;
 #endif
 
 
-// Threshold when cells are allowed to balance.
+// Threshold when cells are allowed to balance. should be in upper 3/4 or so of charging (defualt 3900)
 //
 // Units: millivolts
 #ifndef BMS_BALANCE_THRESHOLD
-#define BMS_BALANCE_THRESHOLD 3550
+#define BMS_BALANCE_THRESHOLD 3900
 #endif
 
 

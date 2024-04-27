@@ -1,0 +1,1 @@
+mbed-tools compile -m NUCLEO_L432KC -t GCC_ARM -f

@@ -37,7 +37,6 @@ void BMSThread::threadWorker() {
   printf("wakeup2\n");
   for (int i = 0; i < BMS_BANK_COUNT; i++) {
     uint16_t rawVoltages[12];
-    uint16_t rawTemps[12];
 
     if (m_bus.SendReadCommand(
             LTC681xBus::BuildAddressedBusCommand(ReadCellVoltageGroupA(), i),
@@ -101,13 +100,22 @@ void BMSThread::threadWorker() {
 
     // Set all status lights high
     // TODO: This should be in some sort of config class
-    
+
     for (int i = 0; i < BMS_BANK_COUNT; i++) {
-        LTC6811::Configuration& config = m_chips[i].getConfig();
-        config.gpio5 = LTC6811::GPIOOutputState::kLow;
+      LTC6811::Configuration &config = m_chips[i].getConfig();
+      config.gpio5 = LTC6811::GPIOOutputState::kLow;
+      m_chips[i].updateConfig();
+    }
+
+    // turn off cell balancing for voltage reading
+    for (int i = 0; i < BMS_BANK_COUNT; i++) {
+        LTC6811::Configuration &config = m_chips[i].getConfig();
+        
+        config.dischargeState.value = 0x0000;
+
         m_chips[i].updateConfig();
     }
-    
+    ThisThread::sleep_for(5ms);
 
     // Start ADC on all chips
     auto startAdcCmd =
@@ -154,19 +162,17 @@ void BMSThread::threadWorker() {
 
       // MUX get temp from each cell
       for (uint8_t j = 0; j < BMS_BANK_CELL_COUNT; j++) {
-        uint8_t muxSelect[6] = {
-            static_cast<uint8_t>(
-                0b01000000 |
-                ((j & 0b111) << 3)), // left most bit controls LED :/ (0 is on)
-            0x00,
-            0x00,
-            0x00,
-            0x00,
-            0x00};
 
-        m_bus.SendDataCommand(
-            LTC681xBus::BuildAddressedBusCommand(WriteConfigurationGroupA(), i),
-            muxSelect);
+        LTC6811::Configuration &config = m_chips[i].getConfig();
+        config.gpio1 = (j & 0b001) ? LTC6811::GPIOOutputState::kHigh
+                                   : LTC6811::GPIOOutputState::kLow;
+        config.gpio2 = ((j & 0b010) >> 1) ? LTC6811::GPIOOutputState::kHigh
+                                          : LTC6811::GPIOOutputState::kLow;
+        config.gpio3 = ((j & 0b100) >> 2) ? LTC6811::GPIOOutputState::kHigh
+                                          : LTC6811::GPIOOutputState::kLow;
+        config.gpio4 = LTC6811::GPIOOutputState::kPassive;
+
+        m_chips[i].updateConfig();
 
         auto gpioADCcmd = StartGpioADC(AdcMode::k7k, GpioSelection::k4);
         if (m_bus.SendCommand(LTC681xBus::BuildAddressedBusCommand(
@@ -188,7 +194,7 @@ void BMSThread::threadWorker() {
         uint16_t tempVoltage = ((uint16_t)rxbuf[8]) | ((uint16_t)rxbuf[9] << 8);
 
         int8_t temp = convertTemp(tempVoltage / 10);
-        // printf("Temp: %d\n", temp);
+        // printf("%d: T: %d\n", j, temp);
         allTemps[j] = temp;
       }
 
@@ -234,67 +240,66 @@ void BMSThread::threadWorker() {
 
     // TODO: DON'T FORGET TO REMOVE THE '!'
     if (!m_discharging) {
-        for (int i = 0; i < BMS_BANK_COUNT; i++) {
-            
-            LTC6811::Configuration config = m_chips[i].getConfig();
+      for (int i = 0; i < BMS_BANK_COUNT; i++) {
 
-            uint16_t dischargeValue = 0x0000; 
+        LTC6811::Configuration &config = m_chips[i].getConfig();
 
-            int cellNum = 0;
+        uint16_t dischargeValue = 0x0000;
 
-            for (int j = 0; j < 12; j++) {
-                if (BMS_CELL_MAP[j] == -1) {
-                    continue;
-                }
-                uint16_t cellVoltage = allVoltages[i * BMS_BANK_CELL_COUNT + cellNum];
-                if (cellVoltage >= BMS_BALANCE_THRESHOLD && cellVoltage >= minVoltage + BMS_DISCHARGE_THRESHOLD) {
-                    printf("Balancing cell %d\n", cellNum);
-                    dischargeValue &= ~(0x1 << j);
-                } else {
-                    dischargeValue |= (0x1 << j);
-                }
-                cellNum++;
-            }
-            
-            //printf("discharge value: %x\n", dischargeValue);
-
-            //m_chips[i].updateConfig();
-
-            //LTC6811::Configuration conf = m_chips[i].getConfig();
-            //printf("config: %x\n", conf.dischargeState.value);
-
-            //uint8_t buf[8];
-
-            //uint8_t sendBuf[6] = {0x78, 0x00, 0x00, 0x00, 0xff, 0x0f};
-
-            //ThisThread::sleep_for(5ms);
-
-            //m_bus.SendDataCommand(LTC681xBus::BuildAddressedBusCommand(WriteConfigurationGroupA(), i), sendBuf);
-
-            //ThisThread::sleep_for(15ms);
-
-            //m_bus.SendReadCommand(LTC681xBus::BuildAddressedBusCommand(ReadConfigurationGroupA(), i), buf);
-
-            //ThisThread::sleep_for(5ms);
-
-            //printf("conf group a: %x %x %x %x %x %x %x %x\n", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7]);
-            
-            //ThisThread::sleep_for(5ms);
-
+        for (int j = 0; j < 12; j++) {
+          if (BMS_CELL_MAP[j] == -1) {
+            continue;
+          }
+          int cellNum = BMS_CELL_MAP[j];
+          uint16_t cellVoltage = allVoltages[i * BMS_BANK_CELL_COUNT + cellNum];
+          if (cellVoltage >= BMS_BALANCE_THRESHOLD &&
+              cellVoltage >= minVoltage + BMS_DISCHARGE_THRESHOLD) {
+            printf("Balancing cell %d\n", cellNum);
+            dischargeValue |= (0x1 << j);
+          }
         }
+
+        // printf("discharge value: %x\n", dischargeValue);
+
+        config.dischargeState.value = dischargeValue;
+
+        m_chips[i].updateConfig();
+
+        // uint8_t buf[8];
+
+        // uint8_t sendBuf[6] = {0x78, 0x00, 0x00, 0x00, 0xff, 0x0f};
+
+        // ThisThread::sleep_for(5ms);
+
+        // m_bus.SendDataCommand(LTC681xBus::BuildAddressedBusCommand(WriteConfigurationGroupA(),
+        // i), sendBuf);
+
+        // ThisThread::sleep_for(15ms);
+
+        // m_bus.SendReadCommand(
+        //     LTC681xBus::BuildAddressedBusCommand(ReadConfigurationGroupA(), i),
+        //     buf);
+
+        // ThisThread::sleep_for(5ms);
+
+        // printf("conf group a: %x %x %x %x %x %x\n", buf[0], buf[1],
+        //        buf[2], buf[3], buf[4], buf[5]);
+
+        // ThisThread::sleep_for(5ms);
+      }
     } else {
-        for (int i = 0; i < BMS_BANK_COUNT; i++) {
+      for (int i = 0; i < BMS_BANK_COUNT; i++) {
 
-            LTC6811::Configuration& config = m_chips[i].getConfig();
-            config.dischargeState.value = 0xff0f;
-            m_chips[i].updateConfig();
-        }
+        LTC6811::Configuration &config = m_chips[i].getConfig();
+        config.dischargeState.value = 0x0000;
+        m_chips[i].updateConfig();
+      }
     }
 
     for (int i = 0; i < BMS_BANK_COUNT; i++) {
-        LTC6811::Configuration& config = m_chips[i].getConfig();
-        config.gpio5 = LTC6811::GPIOOutputState::kHigh;
-        m_chips[i].updateConfig();
+      LTC6811::Configuration &config = m_chips[i].getConfig();
+      config.gpio5 = LTC6811::GPIOOutputState::kLow;
+      m_chips[i].updateConfig();
     }
 
     for (auto mailbox : mailboxes) {

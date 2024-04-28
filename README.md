@@ -1,59 +1,73 @@
-# FS-2
+![](./resources/official_armmbed_example_badge.png)
+# Blinky Mbed OS example
 
-This repo contains all the software for the fs-2 racecar running on mbed os 5 on the LPC1768 microcontroller.
+The example project is part of the [Arm Mbed OS Official Examples](https://os.mbed.com/code/) and is the [getting started example for Mbed OS](https://os.mbed.com/docs/mbed-os/latest/quick-start/index.html). It contains an application that repeatedly blinks an LED on supported [Mbed boards](https://os.mbed.com/platforms/).
 
-## Projects
+You can build the project with all supported [Mbed OS build tools](https://os.mbed.com/docs/mbed-os/latest/tools/index.html). However, this example project specifically refers to the command-line interface tools, [Arm Mbed CLI 1](https://github.com/ARMmbed/mbed-cli#installing-mbed-cli) and [Mbed CLI 2](https://github.com/ARMmbed/mbed-tools#installation).
 
-- `bms`: LTC6811-based bms code for use with the fs-2 accumulator
+(Note: To see a rendered example you can import into the Arm Online Compiler, please see our [import quick start](https://os.mbed.com/docs/mbed-os/latest/quick-start/online-with-the-online-compiler.html#importing-the-code).)
 
-## Getting Started
+## Mbed OS build tools
 
-There are two ways to get started with fs-2 development: Docker and native. Docker is the recommended method because it is the easiest to set up and is the best documented.
+### Mbed CLI 2
+Starting with version 6.5, Mbed OS uses Mbed CLI 2. It uses Ninja as a build system, and CMake to generate the build environment and manage the build process in a compiler-independent manner. If you are working with Mbed OS version prior to 6.5 then check the section [Mbed CLI 1](#mbed-cli-1).
+1. [Install Mbed CLI 2](https://os.mbed.com/docs/mbed-os/latest/build-tools/install-or-upgrade.html).
+1. From the command-line, import the example: `mbed-tools import mbed-os-example-blinky`
+1. Change the current directory to where the project was imported.
 
-### Method 1: Docker (Recommended)
+### Mbed CLI 1
+1. [Install Mbed CLI 1](https://os.mbed.com/docs/mbed-os/latest/quick-start/offline-with-mbed-cli.html).
+1. From the command-line, import the example: `mbed import mbed-os-example-blinky`
+1. Change the current directory to where the project was imported.
 
-Docker is the easiest method to get a fully functional toolchain. Docker containers allow for pre-packaged environments to be distributed with minimal setup.
+## Application functionality
 
-First, install docker [here](https://docs.docker.com/get-docker).
+The `main()` function is the single thread in the application. It toggles the state of a digital output connected to an LED on the board.
 
-Next, to download the docker container with the Mbed toolchain installed, run
+**Note**: This example requires a target with RTOS support, i.e. one with `rtos` declared in `supported_application_profiles` in `targets/targets.json` in [mbed-os](https://github.com/ARMmbed/mbed-os). For non-RTOS targets (usually with small memory sizes), please use [mbed-os-example-blinky-baremetal](https://github.com/ARMmbed/mbed-os-example-blinky-baremetal) instead.
 
-```sh
-docker pull ghcr.io/armmbed/mbed-os-env:mbed-os-6-latest
-```
+## Building and running
 
-And then to start a container with the current directory mounted run
+1. Connect a USB cable between the USB port on the board and the host computer.
+1. Run the following command to build the example project and program the microcontroller flash memory:
 
-```sh
-docker run -it --rm --mount=type=bind,source="$(pwd)",destination=/var/mbed -w /var/mbed ghcr.io/armmbed/mbed-os-env:mbed-os-6-latest
-```
+    * Mbed CLI 2
 
-See [the Mbed Docker documentation](https://os.mbed.com/docs/mbed-os/v6.15/build-tools/docker.html) if you have issues getting the container started.
+    ```bash
+    $ mbed-tools compile -m <TARGET> -t <TOOLCHAIN> --flash
+    ```
 
-### Method 2: Native
+    * Mbed CLI 1
 
-This last method requires the tools be installed manually. The full list of required tools is given below.
+    ```bash
+    $ mbed compile -m <TARGET> -t <TOOLCHAIN> --flash
+    ```
 
-- [mbed-tools](https://github.com/ARMmbed/mbed-tools)
-- [GNU Arm Embedded Toolchain](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm)
-    - Ubuntu/Debian: `gcc-arm-none-eabi`
-    - Brew: `gcc-arm-embedded`
-    - Nix: `nixpkgs.gcc-arm-embedded`
-- [Make](https://www.gnu.org/software/make/)
-- [CMake](https://cmake.org/)
-- Your favorite unix shell
+Your PC may take a few minutes to compile your code.
 
-## Workflow
+The binary is located at:
+* **Mbed CLI 2** - `./cmake_build/<TARGET>/develop/<TOOLCHAIN>/mbed-os-example-blinky.bin`
+* **Mbed CLI 1** - `./BUILD/<TARGET>/<TOOLCHAIN>/mbed-os-example-blinky.bin`
 
-The workflow should be used as follows.
+Alternatively, you can manually copy the binary to the board, which you mount on the host computer over USB.
 
-### Git
+## Expected output
+The LED on your target turns on and off every 500 milliseconds.
 
-Features/fixes can only be added with a pull request. Branches should be named as follows.
 
-- Fix: `fix/<short description>`
-- Feature: `feature/<short description>`
+## Troubleshooting
+If you have problems, you can review the [documentation](https://os.mbed.com/docs/latest/tutorials/debugging.html) for suggestions on what could be wrong and how to fix it.
 
-### All other issues
+## Related Links
 
-For any other issues see the [mbed documentation](https://os.mbed.com/docs/mbed-os).
+* [Mbed OS Stats API](https://os.mbed.com/docs/latest/apis/mbed-statistics.html).
+* [Mbed OS Configuration](https://os.mbed.com/docs/latest/reference/configuration.html).
+* [Mbed OS Serial Communication](https://os.mbed.com/docs/latest/tutorials/serial-communication.html).
+* [Mbed OS bare metal](https://os.mbed.com/docs/mbed-os/latest/reference/mbed-os-bare-metal.html).
+* [Mbed boards](https://os.mbed.com/platforms/).
+
+### License and contributions
+
+The software is provided under Apache-2.0 license. Contributions to this project are accepted under the same license. Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for more info.
+
+This project contains code from other projects. The original license text is included in those source files. They must comply with our license guide.

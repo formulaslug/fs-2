@@ -8,7 +8,7 @@
 
 #include "EnergusTempSensor.h"
 
-BMSThread::BMSThread(LTC681xBus &bus, unsigned int frequency, BmsEventMailbox* mailbox)
+BMSThread::BMSThread(LTC681xBus &bus, unsigned int frequency, BmsEventMailbox* bmsEventMailbox, BmsBalanceAllowedMailbox* bmsBalanceAllowedMailbox)
     : m_bus(bus) {
   for (int i = 0; i < BMS_BANK_COUNT; i++) {
     m_chips.push_back(LTC6811(bus, i));
@@ -89,7 +89,22 @@ void BMSThread::threadWorker() {
   std::array<uint16_t, BMS_BANK_COUNT * BMS_BANK_CELL_COUNT> allVoltages;
   std::array<int8_t, BMS_BANK_COUNT * BMS_BANK_TEMP_COUNT> allTemps;
   while (true) {
-    printf("\n \n");
+      
+    while(!bmsBalanceAllowedMailbox->empty()) {
+        BalanceAllowedEvent *balanceAllowedEvent;
+        
+        osEvent evt = bmsBalanceAllowedMailbox->get();
+        if (evt.status == osEventMessage) {
+            balanceAllowedEvent = (BalanceAllowedEvent*)evt.value.p;
+        } else {
+            continue;
+        }
+
+        balanceAllowed = balanceAllowedEvent->balanceAllowed;
+    }
+
+
+
     m_bus.WakeupBus();
 
     // Set all status lights high
@@ -232,7 +247,7 @@ void BMSThread::threadWorker() {
       throwBmsFault();
     }
 
-    if (bmsState == BMSThreadState::BMSIdle) {
+    if (bmsState == BMSThreadState::BMSIdle && balanceAllowed) {
       for (int i = 0; i < BMS_BANK_COUNT; i++) {
 
         LTC6811::Configuration &config = m_chips[i].getConfig();
@@ -273,7 +288,7 @@ void BMSThread::threadWorker() {
       m_chips[i].updateConfig();
     }
 
-    if (!mailbox->full()) {
+    if (!bmsEventMailbox->full()) {
         BmsEvent* msg = new BmsEvent();
         for (int i = 0; i < BMS_BANK_COUNT*BMS_BANK_CELL_COUNT; i++) {
             msg->voltageValues[i] = allVoltages[i];
@@ -282,7 +297,7 @@ void BMSThread::threadWorker() {
             msg->temperatureValues[i] = allTemps[i];
         }
         msg->bmsState = bmsState;
-        mailbox->put((BmsEvent *)msg);
+        bmsEventMailbox->put((BmsEvent *)msg);
     }
     
 

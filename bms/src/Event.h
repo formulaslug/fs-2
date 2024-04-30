@@ -11,11 +11,6 @@
 #include "rtos.h"
 #include "Mail.h"
 
-enum class BmsEventType : uint16_t {
-  VoltageMeasurement,
-  TemperatureMeasurement
-};
-
 class BmsEvent {
 public:
   uint16_t voltageValues[BMS_BANK_COUNT * BMS_BANK_CELL_COUNT];
@@ -23,8 +18,14 @@ public:
   BMSThreadState bmsState;
 };
 
+class BalanceAllowedEvent {
+public:
+  bool balanceAllowed = false;
+};
+
 static constexpr auto mailboxSize = 4;
 using BmsEventMailbox = Queue<BmsEvent, mailboxSize>;
+using BmsBalanceAllowedMailbox = Queue<BalanceAllowedEvent, mailboxSize>;
 
 // Measurement
 //  - Temp

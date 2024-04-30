@@ -22,7 +22,7 @@
 class BMSThread {
  public:
 
-  BMSThread(LTC681xBus& bus, unsigned int frequency, BmsEventMailbox* mailbox);
+  BMSThread(LTC681xBus& bus, unsigned int frequency, BmsEventMailbox* bmsEventMailbox, BmsBalanceAllowedMailbox* bmsBalanceAllowedMailbox);
 
   // Function to allow for starting threads from static context
   static void startThread(BMSThread *p) {
@@ -30,9 +30,11 @@ class BMSThread {
   }
 
  private:
+  bool balanceAllowed = false;
   LTC681xBus& m_bus;
   std::vector<LTC6811> m_chips;
-  BmsEventMailbox* mailbox;
+  BmsEventMailbox* bmsEventMailbox;
+  BmsEventMailbox* bmsBalanceAllowedMailbox;
 
   BMSThreadState bmsState = BMSThreadState::BMSStartup;
 

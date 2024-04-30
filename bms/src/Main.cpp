@@ -41,6 +41,7 @@ bool prechargeDone = false;
 bool hasBmsFault = false;
 
 uint32_t dcBusVoltage;
+uint32_t tsVoltage;
 
 uint16_t allVoltages[BMS_BANK_COUNT*BMS_BANK_CELL_COUNT];
 int8_t allTemps[BMS_BANK_COUNT*BMS_BANK_TEMP_COUNT];
@@ -61,9 +62,10 @@ int main() {
   auto ltcBus = LTC681xParallelBus(spiDriver);
 
   BmsEventMailbox* bmsMailbox = new BmsEventMailbox();
+  BmsBalanceAllowedMailbox* bmsBalanceAllowedMailbox = new BmsBalanceAllowedMailbox();
 
   Thread bmsThreadThread;
-  BMSThread bmsThread(ltcBus, 1, bmsMailbox);
+  BMSThread bmsThread(ltcBus, 1, bmsMailbox, bmsBalanceAllowedMailbox);
   bmsThreadThread.start(callback(&BMSThread::startThread, &bmsThread));
 
   std::array<int8_t, BMS_BANK_COUNT * BMS_BANK_TEMP_COUNT> allTemps;
@@ -84,16 +86,29 @@ int main() {
             continue;
         }
 
+        switch (bmsEvent->bmsState) {
+            case BMSThreadState::BMSStartup:
+                break;
+            case BMSThreadState::BMSIdle:
+                hasBmsFault = false;
 
+                tsVoltage = 0;
 
-        dcBusVoltage = 0;
+                for (int i = 0; i < BMS_BANK_COUNT*BMS_BANK_CELL_COUNT; i++) {
+                    allVoltages[i] = bmsEvent->voltageValues[i];
+                    tsVoltage += allVoltages[i];
+                }
+                for (int i = 0; i < BMS_BANK_COUNT*BMS_BANK_TEMP_COUNT; i++) {
+                    allTemps[i] = bmsEvent->temperatureValues[i];
+                }
 
-        for (int i = 0; i < BMS_BANK_COUNT*BMS_BANK_CELL_COUNT; i++) {
-            allVoltages[i] = bmsEvent->voltageValues[i];
-            dcBusVoltage += allVoltages[i];
-        }
-        for (int i = 0; i < BMS_BANK_COUNT*BMS_BANK_TEMP_COUNT; i++) {
-            allTemps[i] = bmsEvent->temperatureValues[i];
+                break;
+            case BMSThreadState::BMSFault:
+                printf("*** BMS FAULT ***\n");
+                hasBmsFault = true;
+                break;
+            default:
+                break;
         }
     }
 
@@ -112,6 +127,28 @@ int main() {
             break;
         }
     }
+
+    BalanceAllowedEvent* balanceAllowed;
+    balanceAllowed->balanceAllowed = shutdown_measure_pin;
+    if (!bmsBalanceAllowedMailbox->full()) {
+        bmsBalanceAllowedMailbox->put(balanceAllowed);
+    }
+
+
+    if (dcBusVoltage >= tsVoltage * 0.95) {
+        prechargeDone = true;
+    }
+
+    precharge_control_pin = prechargeDone;
+    bms_fault_pin = hasBmsFault;
+
+    if (prechargeDone || charge_state_pin) {
+        fan_control_pin = true;
+    }
+
+    charge_enable_pin = charge_state_pin && !hasBmsFault && shutdown_measure_pin;
+
+
     ThisThread::sleep_for(50 - (t.read_ms()%50));
   }
 }
@@ -123,7 +160,7 @@ void initIO() {
 
     fan_control_pin = 0; // turn fans off at start
     charge_enable_pin = 0; // charge not allowed at start
-    bms_fault_pin = 0; // assume fault at start
+    bms_fault_pin = 0; // assume fault at start, low means fault
     precharge_control_pin = 0; // positive AIR open at start
 
 }

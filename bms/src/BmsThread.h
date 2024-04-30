@@ -96,7 +96,7 @@ class BMSThread {
   std::vector<BmsEventMailbox*> mailboxes;
   
   // Things that need to go away
-  bool m_discharging = false;
+  bool m_discharging = true;
 
   void throwBmsFault();
   void threadWorker();

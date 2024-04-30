@@ -238,8 +238,7 @@ void BMSThread::threadWorker() {
       throwBmsFault();
     }
 
-    // TODO: DON'T FORGET TO REMOVE THE '!'
-    if (!m_discharging) {
+    if (m_discharging) {
       for (int i = 0; i < BMS_BANK_COUNT; i++) {
 
         LTC6811::Configuration &config = m_chips[i].getConfig();
@@ -264,28 +263,6 @@ void BMSThread::threadWorker() {
         config.dischargeState.value = dischargeValue;
 
         m_chips[i].updateConfig();
-
-        // uint8_t buf[8];
-
-        // uint8_t sendBuf[6] = {0x78, 0x00, 0x00, 0x00, 0xff, 0x0f};
-
-        // ThisThread::sleep_for(5ms);
-
-        // m_bus.SendDataCommand(LTC681xBus::BuildAddressedBusCommand(WriteConfigurationGroupA(),
-        // i), sendBuf);
-
-        // ThisThread::sleep_for(15ms);
-
-        // m_bus.SendReadCommand(
-        //     LTC681xBus::BuildAddressedBusCommand(ReadConfigurationGroupA(), i),
-        //     buf);
-
-        // ThisThread::sleep_for(5ms);
-
-        // printf("conf group a: %x %x %x %x %x %x\n", buf[0], buf[1],
-        //        buf[2], buf[3], buf[4], buf[5]);
-
-        // ThisThread::sleep_for(5ms);
       }
     } else {
       for (int i = 0; i < BMS_BANK_COUNT; i++) {

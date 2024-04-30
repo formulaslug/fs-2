@@ -352,3 +352,19 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
 #define BMS_CAN_FREQUENCY 500000
 #endif
 
+
+enum class BMSThreadState {
+    // BMS startup and self test
+    //   Run self test on all banks
+    //   If OK, go to BMSIdle
+    BMSStartup,
+
+    // BMS in idle mode
+    //   no faults and cells are being actively monitored
+    //
+    //   wait for either faults or a signal to move in to charging state
+    BMSIdle,
+
+    // BMS in failure mode
+    BMSFault
+};

@@ -18,12 +18,9 @@ enum class BmsEventType : uint16_t {
 
 class BmsEvent {
 public:
-  virtual BmsEventType getType() const = 0;
-  //virtual uint8_t* encodeCAN() const = 0;
-  // virtual json encodeJSON() const = 0;
-  // serialize to json
-
-  virtual ~BmsEvent() {};
+  uint16_t voltageValues[BMS_BANK_COUNT * BMS_BANK_CELL_COUNT];
+  int8_t temperatureValues[BMS_BANK_COUNT * BMS_BANK_TEMP_COUNT];
+  BMSThreadState bmsState;
 };
 
 static constexpr auto mailboxSize = 4;
@@ -33,21 +30,6 @@ using BmsEventMailbox = Queue<BmsEvent, mailboxSize>;
 //  - Temp
 //  - Voltage
 //  - Current
-
-class ErrorEvent : public BmsEvent {};
-
-class VoltageMeasurement : public BmsEvent {
-public:
-  BmsEventType getType() const { return BmsEventType::VoltageMeasurement; }
-  std::array<uint16_t, BMS_BANK_COUNT * BMS_BANK_CELL_COUNT> voltageValues;
-};
-
-class TemperatureMeasurement : public BmsEvent {
-public:
-  BmsEventType getType() const { return BmsEventType::TemperatureMeasurement; }
-  std::array<int8_t, BMS_BANK_COUNT * BMS_BANK_TEMP_COUNT> temperatureValues;
-};
-
 
 // isospi error
 //  - init error

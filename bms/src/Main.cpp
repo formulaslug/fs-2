@@ -1,5 +1,7 @@
 #include <array>
+#include <cstdint>
 #include <cstdio>
+#include <memory>
 #include <vector>
 #include <iostream>
 
@@ -13,6 +15,7 @@ CAN* canBus;
 
 void initIO();
 void canRX();
+void canTX();
 
 CircularBuffer<CANMessage, 32> canqueue;
 
@@ -35,7 +38,12 @@ AnalogIn current_sense_pin(ACC_BUFFERED_C_OUT);
 AnalogIn glv_voltage_pin(ACC_GLV_VOLTAGE);
 
 bool prechargeDone = false;
+bool hasBmsFault = false;
 
+uint32_t dcBusVoltage;
+
+uint16_t allVoltages[BMS_BANK_COUNT*BMS_BANK_CELL_COUNT];
+int8_t allTemps[BMS_BANK_COUNT*BMS_BANK_TEMP_COUNT];
 
 int main() {
 
@@ -52,11 +60,10 @@ int main() {
   spiDriver->format(8, 0);
   auto ltcBus = LTC681xParallelBus(spiDriver);
 
-  auto canMailbox = new BmsEventMailbox();
-  std::vector<BmsEventMailbox *> mailboxes = {canMailbox};
+  BmsEventMailbox* bmsMailbox = new BmsEventMailbox();
 
   Thread bmsThreadThread;
-  BMSThread bmsThread(ltcBus, 1, mailboxes);
+  BMSThread bmsThread(ltcBus, 1, bmsMailbox);
   bmsThreadThread.start(callback(&BMSThread::startThread, &bmsThread));
 
   std::array<int8_t, BMS_BANK_COUNT * BMS_BANK_TEMP_COUNT> allTemps;
@@ -67,10 +74,40 @@ int main() {
     int glv_voltage = glv_voltage_pin * 18530; // in mV
     //printf("GLV voltage: %d mV\n", glv);
 
+    while (!bmsMailbox->empty()) {
+        BmsEvent *bmsEvent;
+        
+        osEvent evt = bmsMailbox->get();
+        if (evt.status == osEventMessage) {
+            bmsEvent = (BmsEvent*)evt.value.p;
+        } else {
+            continue;
+        }
+
+
+
+        dcBusVoltage = 0;
+
+        for (int i = 0; i < BMS_BANK_COUNT*BMS_BANK_CELL_COUNT; i++) {
+            allVoltages[i] = bmsEvent->voltageValues[i];
+            dcBusVoltage += allVoltages[i];
+        }
+        for (int i = 0; i < BMS_BANK_COUNT*BMS_BANK_TEMP_COUNT; i++) {
+            allTemps[i] = bmsEvent->temperatureValues[i];
+        }
+    }
+
     while (!canqueue.empty()) {
         CANMessage msg;
         canqueue.pop(msg);
-        switch(msg.id) {
+
+        uint32_t id = msg.id;
+        unsigned char* data = msg.data;
+
+        switch(id) {
+          case 0x681: // temperature message from MC
+            dcBusVoltage = (data[2] | (data[3] << 8)); // TODO: check if this is correct
+            break;
           default:
             break;
         }
@@ -97,4 +134,8 @@ void canRX() {
     if (canBus->read(msg)) {
         canqueue.push(msg);
     }
+}
+
+void canTX() {
+
 }

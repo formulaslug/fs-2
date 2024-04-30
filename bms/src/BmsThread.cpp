@@ -9,7 +9,7 @@
 #include "EnergusTempSensor.h"
 
 BMSThread::BMSThread(LTC681xBus &bus, unsigned int frequency, BmsEventMailbox* bmsEventMailbox, BmsBalanceAllowedMailbox* bmsBalanceAllowedMailbox)
-    : m_bus(bus) {
+    : m_bus(bus), bmsEventMailbox(bmsEventMailbox), bmsBalanceAllowedMailbox(bmsBalanceAllowedMailbox) {
   for (int i = 0; i < BMS_BANK_COUNT; i++) {
     m_chips.push_back(LTC6811(bus, i));
   }
@@ -22,6 +22,7 @@ BMSThread::BMSThread(LTC681xBus &bus, unsigned int frequency, BmsEventMailbox* b
 }
 
 void BMSThread::threadWorker() {
+  printf("BMS threadWorker()\n");
   // Perform self tests
 
   // Cell Voltage self test
@@ -101,6 +102,7 @@ void BMSThread::threadWorker() {
         }
 
         balanceAllowed = balanceAllowedEvent->balanceAllowed;
+        delete balanceAllowedEvent;
     }
 
 

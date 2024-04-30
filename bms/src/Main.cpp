@@ -74,7 +74,7 @@ int main() {
   t.start();
   while (1) {
     int glv_voltage = glv_voltage_pin * 18530; // in mV
-    //printf("GLV voltage: %d mV\n", glv);
+    printf("GLV voltage: %d mV\n", glv_voltage);
 
     while (!bmsMailbox->empty()) {
         BmsEvent *bmsEvent;
@@ -110,6 +110,7 @@ int main() {
             default:
                 break;
         }
+        delete bmsEvent;
     }
 
     while (!canqueue.empty()) {
@@ -128,9 +129,9 @@ int main() {
         }
     }
 
-    BalanceAllowedEvent* balanceAllowed;
-    balanceAllowed->balanceAllowed = shutdown_measure_pin;
     if (!bmsBalanceAllowedMailbox->full()) {
+        BalanceAllowedEvent* balanceAllowed = new BalanceAllowedEvent();
+        balanceAllowed->balanceAllowed = shutdown_measure_pin;
         bmsBalanceAllowedMailbox->put(balanceAllowed);
     }
 

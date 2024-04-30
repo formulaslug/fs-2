@@ -1,6 +1,6 @@
 # FS-2
 
-This repo contains all the software for the fs-2 racecar running on mbed os 5 on the LPC1768 microcontroller.
+This repo contains all the software for the fs-2 racecar running on mbed os 6 on the Nucleo L432KC microcontroller.
 
 ## Projects
 

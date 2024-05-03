@@ -8,8 +8,8 @@
 
 #include "EnergusTempSensor.h"
 
-BMSThread::BMSThread(LTC681xBus &bus, unsigned int frequency, BmsEventMailbox* bmsEventMailbox, BmsBalanceAllowedMailbox* bmsBalanceAllowedMailbox)
-    : m_bus(bus), bmsEventMailbox(bmsEventMailbox), bmsBalanceAllowedMailbox(bmsBalanceAllowedMailbox) {
+BMSThread::BMSThread(LTC681xBus &bus, unsigned int frequency, BmsEventMailbox* bmsEventMailbox, MainToBMSMailbox* mainToBMSMailbox)
+    : m_bus(bus), bmsEventMailbox(bmsEventMailbox), mainToBMSMailbox(mainToBMSMailbox) {
   for (int i = 0; i < BMS_BANK_COUNT; i++) {
     m_chips.push_back(LTC6811(bus, i));
   }
@@ -91,18 +91,19 @@ void BMSThread::threadWorker() {
   std::array<int8_t, BMS_BANK_COUNT * BMS_BANK_TEMP_COUNT> allTemps;
   while (true) {
       
-    while(!bmsBalanceAllowedMailbox->empty()) {
-        BalanceAllowedEvent *balanceAllowedEvent;
+    while(!mainToBMSMailbox->empty()) {
+        MainToBMSEvent *mainToBMSEvent;
         
-        osEvent evt = bmsBalanceAllowedMailbox->get();
+        osEvent evt = mainToBMSMailbox->get();
         if (evt.status == osEventMessage) {
-            balanceAllowedEvent = (BalanceAllowedEvent*)evt.value.p;
+            mainToBMSEvent = (MainToBMSEvent*)evt.value.p;
         } else {
             continue;
         }
 
-        balanceAllowed = balanceAllowedEvent->balanceAllowed;
-        delete balanceAllowedEvent;
+        balanceAllowed = mainToBMSEvent->balanceAllowed;
+        charging = mainToBMSEvent->charging;
+        delete mainToBMSEvent;
     }
 
 
@@ -232,8 +233,8 @@ void BMSThread::threadWorker() {
       }
     }
 
-    uint16_t minTemp = allTemps[0];
-    uint16_t maxTemp = 0;
+    int8_t minTemp = allTemps[0];
+    int8_t maxTemp = 0;
     for (int i = 0; i < BMS_BANK_COUNT * BMS_BANK_TEMP_COUNT; i++) {
       if (allTemps[i] < minTemp) {
         minTemp = allTemps[i];
@@ -241,11 +242,12 @@ void BMSThread::threadWorker() {
         maxTemp = allTemps[i];
       }
     }
+    // printf("min temp: %d, max temp: %d\nmin volt: %d, max volt %d\n", minTemp, maxTemp, minVoltage, maxVoltage);
 
     if (minVoltage <= BMS_FAULT_VOLTAGE_THRESHOLD_LOW ||
         maxVoltage >= BMS_FAULT_VOLTAGE_THRESHOLD_HIGH ||
         minTemp <= BMS_FAULT_TEMP_THRESHOLD_LOW ||
-        maxTemp >= BMS_FAULT_TEMP_THRESHOLD_HIGH) {
+        maxTemp >= ((charging) ? BMS_FAULT_TEMP_THRESHOLD_CHARING_HIGH : BMS_FAULT_TEMP_THRESHOLD_HIGH)) {
       throwBmsFault();
     }
 
@@ -264,7 +266,7 @@ void BMSThread::threadWorker() {
           uint16_t cellVoltage = allVoltages[i * BMS_BANK_CELL_COUNT + cellNum];
           if (cellVoltage >= BMS_BALANCE_THRESHOLD &&
               cellVoltage >= minVoltage + BMS_DISCHARGE_THRESHOLD) {
-            //printf("Balancing cell %d\n", cellNum);
+            // printf("Balancing cell %d\n", cellNum);
             dischargeValue |= (0x1 << j);
           }
         }
@@ -303,7 +305,11 @@ void BMSThread::threadWorker() {
     }
     
 
-    ThisThread::sleep_for(100ms); // TODO: change to 100 or lower
+    if (charging) {
+        ThisThread::sleep_for(200ms); // longer duty cycle when charging
+    } else {
+        ThisThread::sleep_for(100ms);
+    }
   }
 }
 

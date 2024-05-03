@@ -39,6 +39,7 @@ AnalogIn glv_voltage_pin(ACC_GLV_VOLTAGE);
 
 bool prechargeDone = false;
 bool hasBmsFault = false;
+bool isCharging = false;
 
 uint32_t dcBusVoltage;
 uint32_t tsVoltage;
@@ -62,10 +63,10 @@ int main() {
   auto ltcBus = LTC681xParallelBus(spiDriver);
 
   BmsEventMailbox* bmsMailbox = new BmsEventMailbox();
-  BmsBalanceAllowedMailbox* bmsBalanceAllowedMailbox = new BmsBalanceAllowedMailbox();
+  MainToBMSMailbox* mainToBMSMailbox = new MainToBMSMailbox();
 
   Thread bmsThreadThread;
-  BMSThread bmsThread(ltcBus, 1, bmsMailbox, bmsBalanceAllowedMailbox);
+  BMSThread bmsThread(ltcBus, 1, bmsMailbox, mainToBMSMailbox);
   bmsThreadThread.start(callback(&BMSThread::startThread, &bmsThread));
 
   std::array<int8_t, BMS_BANK_COUNT * BMS_BANK_TEMP_COUNT> allTemps;
@@ -74,7 +75,7 @@ int main() {
   t.start();
   while (1) {
     int glv_voltage = glv_voltage_pin * 18530; // in mV
-    printf("GLV voltage: %d mV\n", glv_voltage);
+    //printf("GLV voltage: %d mV\n", glv_voltage);
 
     while (!bmsMailbox->empty()) {
         BmsEvent *bmsEvent;
@@ -129,10 +130,11 @@ int main() {
         }
     }
 
-    if (!bmsBalanceAllowedMailbox->full()) {
-        BalanceAllowedEvent* balanceAllowed = new BalanceAllowedEvent();
-        balanceAllowed->balanceAllowed = shutdown_measure_pin;
-        bmsBalanceAllowedMailbox->put(balanceAllowed);
+    if (!mainToBMSMailbox->full()) {
+        MainToBMSEvent* mainToBMSEvent = new MainToBMSEvent();
+        mainToBMSEvent->balanceAllowed = shutdown_measure_pin;
+        mainToBMSEvent->charging = isCharging;
+        mainToBMSMailbox->put(mainToBMSEvent);
     }
 
 
@@ -147,7 +149,9 @@ int main() {
         fan_control_pin = true;
     }
 
-    charge_enable_pin = charge_state_pin && !hasBmsFault && shutdown_measure_pin;
+    isCharging = charge_state_pin;
+
+    charge_enable_pin = isCharging && !hasBmsFault && shutdown_measure_pin;
 
 
     ThisThread::sleep_for(50 - (t.read_ms()%50));

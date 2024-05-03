@@ -18,14 +18,15 @@ public:
   BMSThreadState bmsState;
 };
 
-class BalanceAllowedEvent {
+class MainToBMSEvent {
 public:
   bool balanceAllowed = false;
+  bool charging = false;
 };
 
 static constexpr auto mailboxSize = 4;
 using BmsEventMailbox = Queue<BmsEvent, mailboxSize>;
-using BmsBalanceAllowedMailbox = Queue<BalanceAllowedEvent, mailboxSize>;
+using MainToBMSMailbox = Queue<MainToBMSEvent, mailboxSize>;
 
 // Measurement
 //  - Temp

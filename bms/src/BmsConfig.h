@@ -39,6 +39,13 @@ extern DigitalOut* chargerControl;
 #define BMS_FAULT_TEMP_THRESHOLD_HIGH 55
 #endif
 
+// Upper threshold when fault will be thrown for cell temperature when charging
+//
+// Units: degrees celcius
+#ifndef BMS_FAULT_TEMP_THRESHOLD_CHARING_HIGH
+#define BMS_FAULT_TEMP_THRESHOLD_CHARING_HIGH 45
+#endif
+
 // Upper threshold when fault will be thrown for cell temperature
 //
 // Units: degrees celcius

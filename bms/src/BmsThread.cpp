@@ -103,6 +103,7 @@ void BMSThread::threadWorker() {
 
         balanceAllowed = mainToBMSEvent->balanceAllowed;
         charging = mainToBMSEvent->charging;
+        // printf("Balance Allowed: %x\nCharging: %x\n", balanceAllowed, charging);
         delete mainToBMSEvent;
     }
 
@@ -218,7 +219,7 @@ void BMSThread::threadWorker() {
         if (index != -1) {
           allVoltages[(BMS_BANK_CELL_COUNT * i) + index] = voltage;
 
-          // printf("%d: V: %d\n", index, voltage);
+          printf("%d: V: %d\n", index, voltage);
         }
       }
     }
@@ -266,7 +267,7 @@ void BMSThread::threadWorker() {
           uint16_t cellVoltage = allVoltages[i * BMS_BANK_CELL_COUNT + cellNum];
           if (cellVoltage >= BMS_BALANCE_THRESHOLD &&
               cellVoltage >= minVoltage + BMS_DISCHARGE_THRESHOLD) {
-            // printf("Balancing cell %d\n", cellNum);
+            printf("Balancing cell %d\n", cellNum);
             dischargeValue |= (0x1 << j);
           }
         }

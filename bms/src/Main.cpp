@@ -98,9 +98,11 @@ int main() {
                 for (int i = 0; i < BMS_BANK_COUNT*BMS_BANK_CELL_COUNT; i++) {
                     allVoltages[i] = bmsEvent->voltageValues[i];
                     tsVoltage += allVoltages[i];
+                    //printf("%d, V: %d\n", i, allVoltages[i]);
                 }
                 for (int i = 0; i < BMS_BANK_COUNT*BMS_BANK_TEMP_COUNT; i++) {
                     allTemps[i] = bmsEvent->temperatureValues[i];
+                    //printf("%d, V: %d\n", i, allTemps[i]);
                 }
 
                 break;
@@ -150,6 +152,7 @@ int main() {
     }
 
     isCharging = charge_state_pin;
+    // printf("charge state: %x\n", isCharging);
 
     charge_enable_pin = isCharging && !hasBmsFault && shutdown_measure_pin;
 

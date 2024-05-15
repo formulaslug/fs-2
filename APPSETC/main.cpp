@@ -4,6 +4,7 @@
  */
 
 #include "mbed.h"
+#include <cstdint>
 
 #if !DEVICE_CAN
 #error [NOT_SUPPORTED] CAN not supported for this target
@@ -12,8 +13,9 @@
 #define MAX_V 3.3
 #define BRAKE_TOL 1 
 #define MAXSPEED 4000
-#define RX_pin D10
-#define TX_pin D2
+#define CAN_RX_PIN D10
+#define CAN_TX_PIN D2
+#define CAN_FREQ 500000
 
 AnalogIn HE1(A1);
 AnalogIn HE2(A0);
@@ -22,11 +24,27 @@ InterruptIn Cockpit(D9);
 DigitalIn Cockpit_D(D9);
 DigitalOut RTDScontrol(D7);
 DigitalOut test_led(LED1);
-CAN can(RX_pin, TX_pin);
+CAN* canBus;
 
 bool TS_Ready = false; //TODO write CAN code to alter 
 bool Motor_On = false;
 bool Implausability = false;
+
+void initIO();
+void canRX();
+void sendSync();
+void sendThrottle();
+
+CircularBuffer<CANMessage, 32> canqueue;
+
+EventQueue queue(4*EVENTS_EVENT_SIZE);
+
+uint8_t mbbAlive = 0;
+bool powerRdy = Motor_On;
+bool motorReverse = false;
+bool motorForward = true;
+uint16_t torqueDemand;
+uint16_t maxSpeed = MAXSPEED;
 
 void runRTDS() {
     // RTDScontrol.write(true);
@@ -67,10 +85,10 @@ void check_start_conditions() {
             printf("Brakes pressed.\n");
         }
 
-        if(can.read(msg)) {
-            printf("Message received: %d\n", msg.data[0]);
-            // TODO recognize tractive signal and set TS_rdy if received
-        }
+        // if(can.read(msg)) {
+        //     printf("Message received: %d\n", msg.data[0]);
+        //     // TODO recognize tractive signal and set TS_rdy if received
+        // }
 
     }
 }
@@ -103,7 +121,7 @@ int main()
     const float HE2_LOW = .21;
     const float HE2_HIGH = .65;
 
-    uint8_t nbbalive = 0;
+    uint8_t mbbAlive = 0;
     printf("Waiting for start conditions!\n");
     Cockpit.rise(&cockpit_switch_high);
     Cockpit.fall(&cockpit_switch_low);
@@ -113,11 +131,33 @@ int main()
     // First we check that if all three thread conditions are met, test_led 3 sec, and then begins to blink
     //voltage range from 0 to 3.3
 
+    initIO();
+
+    canBus->attach(canRX);
+
+    int syncSend_id = queue.call_every(100ms, &sendSync);
+    int throttleSend_id = queue.call_every(200ms, &sendThrottle);
+
     runRTDS();
     
     Timer implausability_track;
     //continuously read analog pins multiply by 3.3V
     while(1) {
+
+        while (!canqueue.empty()) {
+            CANMessage msg;
+            canqueue.pop(msg);
+
+            uint32_t id = msg.id;
+            unsigned char* data = msg.data;
+
+            switch (id) {
+                default:
+                    break;
+            }
+        }
+
+
         //Throttle angle .5 to 4.5 originally
         //20 degrees
         //.5 to 2.5 V
@@ -165,16 +205,51 @@ int main()
         //if(Motor_On == false) break;
 
 
-        // bool powerrdy = Motor_On;
-        // bool reverse = false;
-        // bool forward = true;
-        // if(nbbalive == 255) { nbbalive = 0; } else {nbbalive++;}
-        // uint16_t torquedemand = 100 * pedal_travel;
-        // uint16_t maxspeed = MAXSPEED;
+        powerRdy = Motor_On;
+        motorReverse = false;
+        motorForward = true;
+        torqueDemand = 100 * pedal_travel;
+        maxSpeed = MAXSPEED;
     }
 
     main();
 }
 
+void initIO() {
+    canBus = new CAN(CAN_RX_PIN, CAN_TX_PIN, CAN_FREQ);
+}
 
 
+void canRX() {
+    CANMessage msg;
+
+    if (canBus->read(msg)) {
+        canqueue.push(msg);
+    }
+}
+
+void sendSync() {
+    CANMessage syncMessage;
+    syncMessage.id = 0x80;
+    syncMessage.data[0] = 0x00;
+    canBus->write(syncMessage);
+}
+
+void sendThrottle() {
+    mbbAlive++;
+    mbbAlive %= 16;
+
+    CANMessage throttleMessage;
+    throttleMessage.id = 0x186;
+    
+    throttleMessage.data[0] = torqueDemand;
+    throttleMessage.data[1] = torqueDemand >> 8;
+    throttleMessage.data[2] = maxSpeed;
+    throttleMessage.data[3] = maxSpeed >> 8;
+    throttleMessage.data[4] = 0x00 | (0x01 & motorForward) | ((0x01 & motorReverse) << 1) | ((0x01 & powerRdy) << 3);
+    throttleMessage.data[5] = 0x00 | (0x0f & mbbAlive);
+    throttleMessage.data[6] = 0x00;
+    throttleMessage.data[7] = 0x00;
+
+    canBus->write(throttleMessage);
+}

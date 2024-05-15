@@ -8,10 +8,8 @@
 
 #include "EnergusTempSensor.h"
 
-BMSThread::BMSThread(LTC681xBus &bus, unsigned int frequency,
-                     std::vector<Queue<BmsEvent, mailboxSize> *> mailboxes)
-    : m_bus(bus), mailboxes(mailboxes) {
-  m_delay = 1000 / frequency;
+BMSThread::BMSThread(LTC681xBus &bus, unsigned int frequency, BmsEventMailbox* bmsEventMailbox, MainToBMSMailbox* mainToBMSMailbox)
+    : m_bus(bus), bmsEventMailbox(bmsEventMailbox), mainToBMSMailbox(mainToBMSMailbox) {
   for (int i = 0; i < BMS_BANK_COUNT; i++) {
     m_chips.push_back(LTC6811(bus, i));
   }
@@ -24,17 +22,15 @@ BMSThread::BMSThread(LTC681xBus &bus, unsigned int frequency,
 }
 
 void BMSThread::threadWorker() {
+  printf("BMS threadWorker()\n");
   // Perform self tests
 
   // Cell Voltage self test
   m_bus.WakeupBus();
-  printf("wakeup1\n");
   m_bus.SendCommand(LTC681xBus::BuildBroadcastBusCommand(
       StartSelfTestCellVoltage(AdcMode::k7k, SelfTestMode::kSelfTest1)));
-  printf("Send Command\n");
   ThisThread::sleep_for(4ms);
   m_bus.WakeupBus();
-  printf("wakeup2\n");
   for (int i = 0; i < BMS_BANK_COUNT; i++) {
     uint16_t rawVoltages[12];
 
@@ -58,8 +54,6 @@ void BMSThread::threadWorker() {
             (uint8_t *)rawVoltages + 18) != LTC681xBus::LTC681xBusStatus::Ok) {
       printf("Things are not okay. SelfTestVoltageD\n");
     }
-
-    printf("beep\n");
 
     for (int j = 0; j < 12; j++) {
       printf("AXST %2d: %4x\n", j, rawVoltages[i]);
@@ -91,11 +85,30 @@ void BMSThread::threadWorker() {
   }
 
   printf("SELF TEST DONE \n");
+  bmsState = BMSThreadState::BMSIdle;
 
   std::array<uint16_t, BMS_BANK_COUNT * BMS_BANK_CELL_COUNT> allVoltages;
   std::array<int8_t, BMS_BANK_COUNT * BMS_BANK_TEMP_COUNT> allTemps;
   while (true) {
-    printf("\n \n");
+      
+    while(!mainToBMSMailbox->empty()) {
+        MainToBMSEvent *mainToBMSEvent;
+        
+        osEvent evt = mainToBMSMailbox->get();
+        if (evt.status == osEventMessage) {
+            mainToBMSEvent = (MainToBMSEvent*)evt.value.p;
+        } else {
+            continue;
+        }
+
+        balanceAllowed = mainToBMSEvent->balanceAllowed;
+        charging = mainToBMSEvent->charging;
+        // printf("Balance Allowed: %x\nCharging: %x\n", balanceAllowed, charging);
+        delete mainToBMSEvent;
+    }
+
+
+
     m_bus.WakeupBus();
 
     // Set all status lights high
@@ -125,6 +138,8 @@ void BMSThread::threadWorker() {
       printf("Things are not okay. StartADC\n");
     }
 
+    ThisThread::sleep_for(5ms);
+
     // Read back values from all chips
     for (int i = 0; i < BMS_BANK_COUNT; i++) {
       if (m_bus.PollAdcCompletion(
@@ -132,7 +147,7 @@ void BMSThread::threadWorker() {
           LTC681xBus::LTC681xBusStatus::PollTimeout) {
         printf("Poll timeout.\n");
       } else {
-        printf("Poll OK.\n");
+        //printf("Poll OK.\n");
       }
 
       uint16_t rawVoltages[12];
@@ -206,7 +221,7 @@ void BMSThread::threadWorker() {
         if (index != -1) {
           allVoltages[(BMS_BANK_CELL_COUNT * i) + index] = voltage;
 
-          // printf("%d: V: %d\n", index, voltage);
+        //   printf("%d: V: %d\n", index, voltage);
         }
       }
     }
@@ -221,8 +236,8 @@ void BMSThread::threadWorker() {
       }
     }
 
-    uint16_t minTemp = allTemps[0];
-    uint16_t maxTemp = 0;
+    int8_t minTemp = allTemps[0];
+    int8_t maxTemp = 0;
     for (int i = 0; i < BMS_BANK_COUNT * BMS_BANK_TEMP_COUNT; i++) {
       if (allTemps[i] < minTemp) {
         minTemp = allTemps[i];
@@ -230,16 +245,16 @@ void BMSThread::threadWorker() {
         maxTemp = allTemps[i];
       }
     }
+    printf("min temp: %d, max temp: %d\nmin volt: %d, max volt %d\n", minTemp, maxTemp, minVoltage, maxVoltage);
 
     if (minVoltage <= BMS_FAULT_VOLTAGE_THRESHOLD_LOW ||
         maxVoltage >= BMS_FAULT_VOLTAGE_THRESHOLD_HIGH ||
         minTemp <= BMS_FAULT_TEMP_THRESHOLD_LOW ||
-        maxTemp >= BMS_FAULT_TEMP_THRESHOLD_HIGH) {
+        maxTemp >= ((charging) ? BMS_FAULT_TEMP_THRESHOLD_CHARING_HIGH : BMS_FAULT_TEMP_THRESHOLD_HIGH)) {
       throwBmsFault();
     }
 
-    // TODO: DON'T FORGET TO REMOVE THE '!'
-    if (!m_discharging) {
+    if (bmsState == BMSThreadState::BMSIdle && balanceAllowed) {
       for (int i = 0; i < BMS_BANK_COUNT; i++) {
 
         LTC6811::Configuration &config = m_chips[i].getConfig();
@@ -254,7 +269,7 @@ void BMSThread::threadWorker() {
           uint16_t cellVoltage = allVoltages[i * BMS_BANK_CELL_COUNT + cellNum];
           if (cellVoltage >= BMS_BALANCE_THRESHOLD &&
               cellVoltage >= minVoltage + BMS_DISCHARGE_THRESHOLD) {
-            printf("Balancing cell %d\n", cellNum);
+            // printf("Balancing cell %d\?n", cellNum);
             dischargeValue |= (0x1 << j);
           }
         }
@@ -264,28 +279,6 @@ void BMSThread::threadWorker() {
         config.dischargeState.value = dischargeValue;
 
         m_chips[i].updateConfig();
-
-        // uint8_t buf[8];
-
-        // uint8_t sendBuf[6] = {0x78, 0x00, 0x00, 0x00, 0xff, 0x0f};
-
-        // ThisThread::sleep_for(5ms);
-
-        // m_bus.SendDataCommand(LTC681xBus::BuildAddressedBusCommand(WriteConfigurationGroupA(),
-        // i), sendBuf);
-
-        // ThisThread::sleep_for(15ms);
-
-        // m_bus.SendReadCommand(
-        //     LTC681xBus::BuildAddressedBusCommand(ReadConfigurationGroupA(), i),
-        //     buf);
-
-        // ThisThread::sleep_for(5ms);
-
-        // printf("conf group a: %x %x %x %x %x %x\n", buf[0], buf[1],
-        //        buf[2], buf[3], buf[4], buf[5]);
-
-        // ThisThread::sleep_for(5ms);
       }
     } else {
       for (int i = 0; i < BMS_BANK_COUNT; i++) {
@@ -302,28 +295,29 @@ void BMSThread::threadWorker() {
       m_chips[i].updateConfig();
     }
 
-    for (auto mailbox : mailboxes) {
-      if (!mailbox->full()) {
-        {
-          auto msg = new VoltageMeasurement();
-          msg->voltageValues = allVoltages;
-          mailbox->put((BmsEvent *)msg);
+    if (!bmsEventMailbox->full()) {
+        BmsEvent* msg = new BmsEvent();
+        for (int i = 0; i < BMS_BANK_COUNT*BMS_BANK_CELL_COUNT; i++) {
+            msg->voltageValues[i] = allVoltages[i];
         }
-
-        {
-          auto msg = new TemperatureMeasurement();
-          msg->temperatureValues = allTemps;
-          mailbox->put((BmsEvent *)msg);
+        for (int i = 0; i < BMS_BANK_COUNT*BMS_BANK_TEMP_COUNT; i++) {
+            msg->temperatureValues[i] = allTemps[i];
         }
-      }
+        msg->bmsState = bmsState;
+        bmsEventMailbox->put((BmsEvent *)msg);
     }
+    
 
-    ThisThread::sleep_for(100ms); // TODO: change to 100 or lower
+    if (charging) {
+        ThisThread::sleep_for(500ms); // longer duty cycle when charging, 500 default
+    } else {
+        ThisThread::sleep_for(100ms); // 100 ms
+    }
   }
 }
 
 void BMSThread::throwBmsFault() {
-  m_discharging = false;
+  // bmsState = BMSThreadState::BMSFault;
   // palClearLine(LINE_BMS_FLT);
   // palSetLine(LINE_CHARGER_CONTROL);
 }

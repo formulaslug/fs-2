@@ -19,7 +19,7 @@ extern DigitalOut* chargerControl;
 
 // Number of LTC6811 battery banks to communicate with
 #ifndef BMS_BANK_COUNT
-#define BMS_BANK_COUNT 1
+#define BMS_BANK_COUNT 4
 #endif
 
 // Number of cell voltage readings per LTC6811
@@ -37,6 +37,13 @@ extern DigitalOut* chargerControl;
 // Units: degrees celcius
 #ifndef BMS_FAULT_TEMP_THRESHOLD_HIGH
 #define BMS_FAULT_TEMP_THRESHOLD_HIGH 55
+#endif
+
+// Upper threshold when fault will be thrown for cell temperature when charging
+//
+// Units: degrees celcius
+#ifndef BMS_FAULT_TEMP_THRESHOLD_CHARING_HIGH
+#define BMS_FAULT_TEMP_THRESHOLD_CHARING_HIGH 45
 #endif
 
 // Upper threshold when fault will be thrown for cell temperature
@@ -72,7 +79,7 @@ extern DigitalOut* chargerControl;
 //
 // Units: millivolts
 #ifndef BMS_BALANCE_THRESHOLD
-#define BMS_BALANCE_THRESHOLD 3900
+#define BMS_BALANCE_THRESHOLD 3700
 #endif
 
 
@@ -107,95 +114,141 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
 #endif
 
 
-
-
-/*
-// BMS fault latch
+// Acc board shutdown measurement
 //
-// Readback from BMS fault relay to be broadcasted on CAN bus
-#ifndef BMS_PIN_BMS_FLT_LAT
+// To measure the state of the shutdown circuit
+#ifndef ACC_SHUTDOWN_MEASURE
 
-#ifdef TARGET_LPC1768
-  #define BMS_PIN_BMS_FLT_LAT p12
-#elif TARGET_NUCLEO_F303K8
-  #define BMS_PIN_BMS_FLT_LAT PF_1
+#ifdef TARGET_NUCLEO_L432KC
+  #define ACC_SHUTDOWN_MEASURE PA_2
 #else
-  #error "Unknown board for BMS_PIN_BMS_FLT_LAT"
+  #error "Unknown board for ACC_SHUTDOWN_MEASURE"
 #endif
 
 #endif
-*/
 
 
-
-/*
-// IMD status input
+// Acc board fan control
 //
-// Reads PWM output from IMD board
-#ifndef BMS_PIN_IMD_STATUS
+// To be set high or low to enable/disable fans
+#ifndef ACC_FAN_CONTROL
 
-#ifdef TARGET_LPC1768
-  #define BMS_PIN_IMD_STATUS p14
-#elif TARGET_NUCLEO_F303K8
-  #define BMS_PIN_IMD_STATUS PF_0
+#ifdef TARGET_NUCLEO_L432KC
+  #define ACC_FAN_CONTROL PA_7
 #else
-  #error "Unknown board for BMS_PIN_IMD_STATUS"
+  #error "Unknown board for ACC_FAN_CONTROL"
 #endif
 
 #endif
-*/
 
 
-
-/*
-// IMD fault latch
+// Acc board current sensor vref read
 //
-// Readback from IMD fault relay to be broadcasted on CAN bus
-#ifndef BMS_PIN_IMD_FLT_LAT
+// To measure the vref on the current sensor
+#ifndef ACC_BUFFERED_C_VREF
 
-#ifdef TARGET_LPC1768
-  #define BMS_PIN_IMD_FLT_LAT p13
-#elif TARGET_NUCLEO_F303K8
-  #define BMS_PIN_IMD_FLT_LAT PA_8
+#ifdef TARGET_NUCLEO_L432KC
+  #define ACC_BUFFERED_C_VREF PA_3
 #else
-  #error "Unknown board for BMS_PIN_IMD_FLT_LAT"
+  #error "Unknown board for ACC_BUFFERED_C_VREF"
 #endif
 
 #endif
-*/
 
 
-
-// Charger output
+// Acc board current sensor output read
 //
-// To be pulled high to enable charger
-#ifndef BMS_PIN_CHARGER_CONTROL
+// To measure the output on the current sensor
+#ifndef ACC_BUFFERED_C_OUT
 
-#ifdef TARGET_LPC1768
-  #define BMS_PIN_CHARGER_CONTROL p11
-#elif TARGET_NUCLEO_F303K8
-  #define BMS_PIN_CHARGER_CONTROL PB_1
-#elif TARGET_NUCLEO_L432KC
-  #define BMS_PIN_CHARGER_CONTROL PA_9
+#ifdef TARGET_NUCLEO_L432KC
+  #define ACC_BUFFERED_C_OUT PA_1
 #else
-  #error "Unknown board for BMS_PIN_CHARGER_CONTROL"
+  #error "Unknown board for ACC_BUFFERED_C_OUT"
 #endif
 
 #endif
 
-// Current input
+
+// Acc board GLV voltage read
 //
-// Input from analog current sensor
-#ifndef BMS_PIN_SIG_CURRENT
+// To measure the voltage of the GLV system
+#ifndef ACC_GLV_VOLTAGE
 
-#ifdef TARGET_LPC1768
-  #define BMS_PIN_SIG_CURRENT p15
-#elif TARGET_NUCLEO_F303K8
-  #define BMS_PIN_SIG_CURRENT PA_0
-#elif TARGET_NUCLEO_L432KC
-  #define BMS_PIN_SIG_CURRENT PA_1
+#ifdef TARGET_NUCLEO_L432KC
+  #define ACC_GLV_VOLTAGE PA_0
 #else
-  #error "Unknown board for BMS_PIN_SIG_CURRENT"
+  #error "Unknown board for ACC_GLV_VOLTAGE"
+#endif
+
+#endif
+
+
+// Acc charge enable output
+//
+// To be set high when charging is allowed
+#ifndef ACC_CHARGE_ENABLE
+
+#ifdef TARGET_NUCLEO_L432KC
+  #define ACC_CHARGE_ENABLE PA_9
+#else
+  #error "Unknown board for ACC_CHARGE_ENABLE"
+#endif
+
+#endif
+
+
+// Acc charge state input
+//
+// To measure if the acc is connected to the charger
+#ifndef ACC_CHARGE_STATE
+
+#ifdef TARGET_NUCLEO_L432KC
+  #define ACC_CHARGE_STATE PA_10
+#else
+  #error "Unknown board for ACC_CHARGE_STATE"
+#endif
+
+#endif
+
+
+// Acc IMD status input
+//
+// To measure the state of the IMD status pin
+#ifndef ACC_IMD_STATUS
+
+#ifdef TARGET_NUCLEO_L432KC
+  #define ACC_IMD_STATUS PB_0
+#else
+  #error "Unknown board for ACC_IMD_STATUS"
+#endif
+
+#endif
+
+
+// Acc BMS Fault Output
+//
+// To be set low when there is a BMS fault
+#ifndef ACC_BMS_FAULT
+
+#ifdef TARGET_NUCLEO_L432KC
+  #define ACC_BMS_FAULT PB_7
+#else
+  #error "Unknown board for ACC_BMS_FAULT"
+#endif
+
+#endif
+
+
+// Acc Precharge Control
+//
+// To be set high when precharging is done to allow the positive AIR to close
+#ifndef ACC_PRECHARGE_CONTROL
+
+#ifdef TARGET_NUCLEO_L432KC
+  #define ACC_PRECHARGE_CONTROL PB_1
+#else
+  #error "Unknown board for ACC_PRECHARGE_CONTROL"
 #endif
 
 #endif
@@ -306,3 +359,19 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
 #define BMS_CAN_FREQUENCY 500000
 #endif
 
+
+enum class BMSThreadState {
+    // BMS startup and self test
+    //   Run self test on all banks
+    //   If OK, go to BMSIdle
+    BMSStartup,
+
+    // BMS in idle mode
+    //   no faults and cells are being actively monitored
+    //
+    //   wait for either faults or a signal to move in to charging state
+    BMSIdle,
+
+    // BMS in failure mode
+    BMSFault
+};

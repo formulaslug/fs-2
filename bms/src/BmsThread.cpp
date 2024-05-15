@@ -138,6 +138,8 @@ void BMSThread::threadWorker() {
       printf("Things are not okay. StartADC\n");
     }
 
+    ThisThread::sleep_for(5ms);
+
     // Read back values from all chips
     for (int i = 0; i < BMS_BANK_COUNT; i++) {
       if (m_bus.PollAdcCompletion(
@@ -219,7 +221,7 @@ void BMSThread::threadWorker() {
         if (index != -1) {
           allVoltages[(BMS_BANK_CELL_COUNT * i) + index] = voltage;
 
-          printf("%d: V: %d\n", index, voltage);
+        //   printf("%d: V: %d\n", index, voltage);
         }
       }
     }
@@ -243,7 +245,7 @@ void BMSThread::threadWorker() {
         maxTemp = allTemps[i];
       }
     }
-    // printf("min temp: %d, max temp: %d\nmin volt: %d, max volt %d\n", minTemp, maxTemp, minVoltage, maxVoltage);
+    printf("min temp: %d, max temp: %d\nmin volt: %d, max volt %d\n", minTemp, maxTemp, minVoltage, maxVoltage);
 
     if (minVoltage <= BMS_FAULT_VOLTAGE_THRESHOLD_LOW ||
         maxVoltage >= BMS_FAULT_VOLTAGE_THRESHOLD_HIGH ||
@@ -267,7 +269,7 @@ void BMSThread::threadWorker() {
           uint16_t cellVoltage = allVoltages[i * BMS_BANK_CELL_COUNT + cellNum];
           if (cellVoltage >= BMS_BALANCE_THRESHOLD &&
               cellVoltage >= minVoltage + BMS_DISCHARGE_THRESHOLD) {
-            printf("Balancing cell %d\n", cellNum);
+            // printf("Balancing cell %d\?n", cellNum);
             dischargeValue |= (0x1 << j);
           }
         }
@@ -307,15 +309,15 @@ void BMSThread::threadWorker() {
     
 
     if (charging) {
-        ThisThread::sleep_for(200ms); // longer duty cycle when charging
+        ThisThread::sleep_for(500ms); // longer duty cycle when charging, 500 default
     } else {
-        ThisThread::sleep_for(100ms);
+        ThisThread::sleep_for(100ms); // 100 ms
     }
   }
 }
 
 void BMSThread::throwBmsFault() {
-  bmsState = BMSThreadState::BMSFault;
+  // bmsState = BMSThreadState::BMSFault;
   // palClearLine(LINE_BMS_FLT);
   // palSetLine(LINE_CHARGER_CONTROL);
 }

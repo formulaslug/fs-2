@@ -19,7 +19,7 @@ extern DigitalOut* chargerControl;
 
 // Number of LTC6811 battery banks to communicate with
 #ifndef BMS_BANK_COUNT
-#define BMS_BANK_COUNT 1
+#define BMS_BANK_COUNT 4
 #endif
 
 // Number of cell voltage readings per LTC6811

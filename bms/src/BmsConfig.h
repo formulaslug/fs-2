@@ -79,10 +79,23 @@ extern DigitalOut* chargerControl;
 //
 // Units: millivolts
 #ifndef BMS_BALANCE_THRESHOLD
-#define BMS_BALANCE_THRESHOLD 3700
+#define BMS_BALANCE_THRESHOLD 3900
 #endif
 
+// highest power allowed
+#ifndef CAR_MAX_POWER
+#define CAR_MAX_POWER 80000
+#endif
 
+// percent of highest power allowed (for tolerance)
+#ifndef CAR_POWER_PERCENT
+#define CAR_POWER_PERCENT 0.95
+#endif
+
+// percent of precharge needed to consider precharging done (and close the +AIR)
+#ifndef PRECHARGE_PERCENT
+#define PRECHARGE_PERCENT 0.95
+#endif
 
 
 // BMS Cell lookup

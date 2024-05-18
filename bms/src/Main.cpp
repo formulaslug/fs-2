@@ -10,6 +10,8 @@
 #include "LTC681xParallelBus.h"
 #include "BmsThread.h"
 
+#include "Can.h"
+
 
 CAN* canBus;
 
@@ -40,12 +42,19 @@ AnalogIn glv_voltage_pin(ACC_GLV_VOLTAGE);
 bool prechargeDone = false;
 bool hasBmsFault = false;
 bool isCharging = false;
+bool hasFansOn = false;
+bool isBalancing = false;
 
-uint32_t dcBusVoltage;
-uint32_t tsVoltage;
+uint16_t dcBusVoltage;
+uint16_t tsVoltage;
+uint8_t glvVoltage;
+uint16_t tsCurrent;
 
 uint16_t allVoltages[BMS_BANK_COUNT*BMS_BANK_CELL_COUNT];
 int8_t allTemps[BMS_BANK_COUNT*BMS_BANK_TEMP_COUNT];
+
+int8_t minCellVolt; // factor of 0.02 so 255 is 5.1 volts
+int8_t maxCellVolt; // factor of 0.02 so 255 is 5.1 volts
 
 int main() {
 
@@ -74,7 +83,7 @@ int main() {
   Timer t;
   t.start();
   while (1) {
-    int glv_voltage = glv_voltage_pin * 18530; // in mV
+    glvVoltage = glv_voltage_pin * 18530; // in mV
     //printf("GLV voltage: %d mV\n", glv_voltage);
 
     while (!bmsMailbox->empty()) {
@@ -92,6 +101,10 @@ int main() {
                 break;
             case BMSThreadState::BMSIdle:
                 hasBmsFault = false;
+
+                minCellVolt = bmsEvent->minVolt;
+                maxCellVolt = bmsEvent->maxVolt;
+                isBalancing = bmsEvent->isBalancing;
 
                 tsVoltage = 0;
 
@@ -140,21 +153,28 @@ int main() {
     }
 
 
-    if (dcBusVoltage >= tsVoltage * 0.95) {
+    if (dcBusVoltage >= tsVoltage * PRECHARGE_PERCENT) {
         prechargeDone = true;
     }
 
     precharge_control_pin = prechargeDone;
     bms_fault_pin = hasBmsFault;
 
-    if (prechargeDone || charge_state_pin) {
-        fan_control_pin = true;
-    }
+    hasFansOn = (prechargeDone || charge_state_pin);
+    
 
     isCharging = charge_state_pin;
     // printf("charge state: %x\n", isCharging);
 
     charge_enable_pin = isCharging && !hasBmsFault && shutdown_measure_pin;
+    fan_control_pin = hasFansOn;
+
+
+    // times 1.5 to change from 3.3v to 5v
+    // divided by 0.625 for how the current sensor works :/
+    // divided by 300 because that's the nominal current reading of the sensor (ie baseline)
+    // multiplied by 10 and cast to a uint16 for 1 decimal place
+    tsCurrent = (uint16_t)(((current_sense_pin-current_vref_pin)/125.0)*10);
 
 
     ThisThread::sleep_for(50 - (t.read_ms()%50));
@@ -181,6 +201,56 @@ void canRX() {
     }
 }
 
-void canTX() {
-    
+void canBootupTX() {
+    canBus->write(accBoardBootup());
+}
+
+void canBoardStateTX() {
+    canBus->write(accBoardState(
+        glvVoltage,
+        tsVoltage,
+        hasBmsFault,
+        isBalancing,
+        prechargeDone,
+        isCharging,
+        hasFansOn,
+        shutdown_measure_pin,
+        false,
+        false,
+        minCellVolt,
+        maxCellVolt,
+        tsCurrent
+    ));
+}
+
+void canBoardTempTX(uint8_t segment) {
+    int8_t temps[7] = {
+            allTemps[(segment * BMS_BANK_CELL_COUNT)],
+            allTemps[(segment * BMS_BANK_CELL_COUNT) + 1],
+            allTemps[(segment * BMS_BANK_CELL_COUNT) + 2],
+            allTemps[(segment * BMS_BANK_CELL_COUNT) + 3],
+            allTemps[(segment * BMS_BANK_CELL_COUNT) + 4],
+            allTemps[(segment * BMS_BANK_CELL_COUNT) + 5],
+            allTemps[(segment * BMS_BANK_CELL_COUNT) + 6]
+    };
+    canBus->write(accBoardTemp(segment, temps));
+}
+
+void canBoardVoltTX(uint8_t segment) {
+    uint16_t volts[7] = {
+            allVoltages[(segment * BMS_BANK_CELL_COUNT)],
+            allVoltages[(segment * BMS_BANK_CELL_COUNT) + 1],
+            allVoltages[(segment * BMS_BANK_CELL_COUNT) + 2],
+            allVoltages[(segment * BMS_BANK_CELL_COUNT) + 3],
+            allVoltages[(segment * BMS_BANK_CELL_COUNT) + 4],
+            allVoltages[(segment * BMS_BANK_CELL_COUNT) + 5],
+            allVoltages[(segment * BMS_BANK_CELL_COUNT) + 6]
+    };
+    canBus->write(accBoardVolt(segment, volts));
+}
+
+void canCurrentLimTX() {
+    uint16_t chargeCurrentLimit = 0x0000;
+    uint16_t dischargeCurrentLimit = (uint16_t)(CAR_MAX_POWER/tsVoltage)*CAR_POWER_PERCENT;
+    canBus->write(motorControllerCurrentLim(chargeCurrentLimit, dischargeCurrentLimit));
 }

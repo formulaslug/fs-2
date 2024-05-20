@@ -1,8 +1,8 @@
 #include "Can.h"
 #include <cstdint>
 
-CANMessage accBoardBootup () {
-  const char * startupMessage = 0x00;
+CANMessage accBoardBootup() {
+  uint8_t startupMessage[8];
   return CANMessage(kNMT_ACC_HEARTBEAT, startupMessage);  
 }
 

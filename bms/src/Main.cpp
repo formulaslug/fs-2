@@ -1,6 +1,7 @@
 #include <array>
 #include <cstdint>
 #include <cstdio>
+#include <string>
 #include <memory>
 #include <vector>
 #include <iostream>
@@ -17,7 +18,26 @@ CAN* canBus;
 
 void initIO();
 void canRX();
-void canTX();
+
+void canBootupTX();
+void canBoardStateTX();
+void canTempTX(uint8_t seg);
+void canTempTX0();
+void canTempTX1();
+void canTempTX2();
+void canTempTX3();
+void canVoltTX(uint8_t seg);
+void canVoltTX0();
+void canVoltTX1();
+void canVoltTX2();
+void canVoltTX3();
+void canCurrentLimTX();
+
+
+
+EventQueue queue(4*EVENTS_EVENT_SIZE); // creates an eventqueue which is thread and ISR safe. EVENTS_EVENT_SIZE is the size of the buffer allocated
+
+
 
 CircularBuffer<CANMessage, 32> canqueue;
 
@@ -174,9 +194,9 @@ int main() {
     // divided by 0.625 for how the current sensor works :/
     // divided by 300 because that's the nominal current reading of the sensor (ie baseline)
     // multiplied by 10 and cast to a uint16 for 1 decimal place
-    tsCurrent = (uint16_t)(((current_sense_pin-current_vref_pin)/125.0)*10);
+    tsCurrent = ((uint16_t)((current_sense_pin-current_vref_pin)/125.0))*10;
 
-
+    queue.dispatch_once();
     ThisThread::sleep_for(50 - (t.read_ms()%50));
   }
 }
@@ -184,6 +204,22 @@ int main() {
 void initIO() {
     canBus = new CAN(BMS_PIN_CAN_RX, BMS_PIN_CAN_TX, BMS_CAN_FREQUENCY);
     canBus->attach(canRX);
+
+    // canBus->write(accBoardBootup());
+
+    int canBootupUD = queue.call(&canBootupTX);
+    queue.dispatch_once();
+
+    int canBoardStateID = queue.call_every(100ms, &canBoardStateTX);
+    int canCurrentLimID = queue.call_every(40ms, &canCurrentLimTX);
+    int canVoltID0 = queue.call_every(200ms, &canVoltTX0);
+    int canVoltID1 = queue.call_every(200ms, &canVoltTX1);
+    int canVoltID2 = queue.call_every(200ms, &canVoltTX2);
+    int canVoltID3 = queue.call_every(200ms, &canVoltTX3);
+    int canTempID0 = queue.call_every(200ms, &canTempTX0);
+    int canTempID1 = queue.call_every(200ms, &canTempTX1);
+    int canTempID2 = queue.call_every(200ms, &canTempTX2);
+    int canTempID3 = queue.call_every(200ms, &canTempTX3);
 
 
     fan_control_pin = 0; // turn fans off at start
@@ -223,7 +259,7 @@ void canBoardStateTX() {
     ));
 }
 
-void canBoardTempTX(uint8_t segment) {
+void canTempTX(uint8_t segment) {
     int8_t temps[7] = {
             allTemps[(segment * BMS_BANK_CELL_COUNT)],
             allTemps[(segment * BMS_BANK_CELL_COUNT) + 1],
@@ -236,7 +272,7 @@ void canBoardTempTX(uint8_t segment) {
     canBus->write(accBoardTemp(segment, temps));
 }
 
-void canBoardVoltTX(uint8_t segment) {
+void canVoltTX(uint8_t segment) {
     uint16_t volts[7] = {
             allVoltages[(segment * BMS_BANK_CELL_COUNT)],
             allVoltages[(segment * BMS_BANK_CELL_COUNT) + 1],
@@ -249,8 +285,40 @@ void canBoardVoltTX(uint8_t segment) {
     canBus->write(accBoardVolt(segment, volts));
 }
 
+void canVoltTX0() {
+    canVoltTX(0);
+}
+
+void canVoltTX1() {
+    canVoltTX(1);
+}
+
+void canVoltTX2() {
+    canVoltTX(2);
+}
+
+void canVoltTX3() {
+    canVoltTX(3);
+}
+
+void canTempTX0() {
+    canTempTX(0);
+}
+
+void canTempTX1() {
+    canTempTX(1);
+}
+
+void canTempTX2() {
+    canTempTX(2);
+}
+
+void canTempTX3() {
+    canTempTX(3);
+}
+
 void canCurrentLimTX() {
     uint16_t chargeCurrentLimit = 0x0000;
-    uint16_t dischargeCurrentLimit = (uint16_t)(CAR_MAX_POWER/tsVoltage)*CAR_POWER_PERCENT;
+    uint16_t dischargeCurrentLimit = (uint16_t)(CAR_MAX_POWER/117.6)*CAR_POWER_PERCENT;
     canBus->write(motorControllerCurrentLim(chargeCurrentLimit, dischargeCurrentLimit));
 }

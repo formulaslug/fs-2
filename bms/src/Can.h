@@ -16,7 +16,7 @@ constexpr uint32_t kNMT_ACC_HEARTBEAT = 0x702;
 constexpr uint32_t kRPDO_MAX_CURRENTS = 0x286;
 
 /* Bootup message */
-CANMessage accBoardBootup ();
+CANMessage accBoardBootup();
 
 /* TPDO that sends various states and information about the accumulator */
 CANMessage accBoardState(uint8_t glvVoltage, uint16_t tsVoltage, bool bmsFault, bool bmsBalancing, bool prechargeDone, bool charging, bool fansOn, bool shutdownClosed, bool unused_A, bool unused_B, uint8_t minCellVoltage, uint8_t maxCellVoltage, int16_t tsCurrent);

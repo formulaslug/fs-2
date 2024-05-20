@@ -1,0 +1,59 @@
+Conversion Warnings Log
+
+
+MSG_ID: 386 	MSG_TYPE: S 	MSG_NAME: TPDO_ACC_BOARD_State
+	SIG_NAME: BMS_Fault, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_Balancing, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: Precharge_Done, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: Charging, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: Fans_On, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: Shutdown_Closed, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: UNUSED_a, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: UNUSED_b, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 390 	MSG_TYPE: S 	MSG_NAME: SME_RPDO_Throttle_Demand
+	SIG_NAME: SME_THROTL_UNUSED_BIT_1, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: SME_THROTL_UNUSED_BIT_2, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: SME_THROTL_UNUSED_BIT_3, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: SME_THROTL_UNUSED_BIT_4, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: SME_THROTL_UNUSED_BIT_5, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: SME_THROTL_UNUSED_BIT_6, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: SME_THROTL_UNUSED_BIT_7, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: SME_THROTL_UNUSED_BIT_8, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: SME_THROTL_UNUSED_BIT_9, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: SME_THROTL_UNUSED_SHORT_1, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 646 	MSG_TYPE: S 	MSG_NAME: SME_RPDO_Max_Currents
+	SIG_NAME: SME_CURRLIM_UNUSED_INT_1, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 1153 	MSG_TYPE: S 	MSG_NAME: SME_TPDO_Torque_speed
+	SIG_NAME: SME_TRQSPD_Speed, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 1665 	MSG_TYPE: S 	MSG_NAME: SME_TPDO_Temperature
+	SIG_NAME: SME_TEMP_ControllerTemperature, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: SME_TEMP_MotorTemperature, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 1073741824 	MSG_TYPE: X 	MSG_NAME: VECTOR__INDEPENDENT_SIG_MSG
+	SIG_NAME: Max_Cell_Temp, STATUS: No error, ACTION: Signal Discarded
+	SIG_NAME: TEMP_0, STATUS: No error, ACTION: Signal Discarded
+	SIG_NAME: TEMP_1, STATUS: No error, ACTION: Signal Discarded
+	SIG_NAME: TEMP_2, STATUS: No error, ACTION: Signal Discarded
+	SIG_NAME: TEMP_3, STATUS: No error, ACTION: Signal Discarded
+	SIG_NAME: TEMP_4, STATUS: No error, ACTION: Signal Discarded
+	SIG_NAME: TEMP_5, STATUS: No error, ACTION: Signal Discarded
+	SIG_NAME: TEMP_6, STATUS: No error, ACTION: Signal Discarded
+	SIG_NAME: TEMP_0, STATUS: No error, ACTION: Signal Discarded
+	SIG_NAME: TEMP_1, STATUS: No error, ACTION: Signal Discarded
+	SIG_NAME: TEMP_2, STATUS: No error, ACTION: Signal Discarded
+	SIG_NAME: TEMP_3, STATUS: No error, ACTION: Signal Discarded
+	SIG_NAME: TEMP_4, STATUS: No error, ACTION: Signal Discarded
+	SIG_NAME: TEMP_5, STATUS: No error, ACTION: Signal Discarded
+	SIG_NAME: TEMP_6, STATUS: No error, ACTION: Signal Discarded
+	SIG_NAME: TEMP_0, STATUS: No error, ACTION: Signal Discarded
+	SIG_NAME: TEMP_1, STATUS: No error, ACTION: Signal Discarded
+	SIG_NAME: TEMP_2, STATUS: No error, ACTION: Signal Discarded
+	SIG_NAME: TEMP_3, STATUS: No error, ACTION: Signal Discarded
+	SIG_NAME: TEMP_4, STATUS: No error, ACTION: Signal Discarded
+	SIG_NAME: TEMP_5, STATUS: No error, ACTION: Signal Discarded
+	SIG_NAME: TEMP_6, STATUS: No error, ACTION: Signal Discarded
+	SIG_NAME: Temp_Segment, STATUS: No error, ACTION: Signal Discarded

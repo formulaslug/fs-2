@@ -79,40 +79,40 @@ BO_ 386 TPDO_ACC_BOARD_State: 8 Vector__XXX
  SG_ TS_Current : 48|16@1- (0.1,0) [-3276.8|3276.7] "Amps" Vector__XXX
 
 BO_ 393 TPDO_ACC_BOARD_Temp_0: 8 Vector__XXX
- SG_ Seg0_TEMP_0 : 0|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Seg0_TEMP_1 : 8|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Seg0_TEMP_2 : 16|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Seg0_TEMP_3 : 24|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Seg0_TEMP_4 : 32|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Seg0_TEMP_5 : 40|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Seg0_TEMP_6 : 48|8@1+ (1,-40) [-40|215] "" Vector__XXX
+ SG_ Seg0_TEMP_0 : 0|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Seg0_TEMP_1 : 8|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Seg0_TEMP_2 : 16|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Seg0_TEMP_3 : 24|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Seg0_TEMP_4 : 32|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Seg0_TEMP_5 : 40|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Seg0_TEMP_6 : 48|8@1- (1,0) [-128|127] "" Vector__XXX
 
 BO_ 649 TPDO_ACC_BOARD_Temp_1: 8 Vector__XXX
- SG_ Seg1_TEMP_0 : 0|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Seg1_TEMP_1 : 8|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Seg1_TEMP_2 : 16|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Seg1_TEMP_3 : 24|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Seg1_TEMP_4 : 32|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Seg1_TEMP_5 : 40|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Seg1_TEMP_6 : 48|8@1+ (1,-40) [-40|215] "" Vector__XXX
+ SG_ Seg1_TEMP_0 : 0|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Seg1_TEMP_1 : 8|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Seg1_TEMP_2 : 16|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Seg1_TEMP_3 : 24|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Seg1_TEMP_4 : 32|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Seg1_TEMP_5 : 40|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Seg1_TEMP_6 : 48|8@1- (1,0) [-128|127] "" Vector__XXX
 
 BO_ 905 TPDO_ACC_BOARD_Temp_2: 8 Vector__XXX
- SG_ Seg2_TEMP_0 : 0|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Seg2_TEMP_1 : 8|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Seg2_TEMP_2 : 16|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Seg2_TEMP_3 : 24|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Seg2_TEMP_4 : 32|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Seg2_TEMP_5 : 40|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Seg2_TEMP_6 : 48|8@1+ (1,-40) [-40|215] "" Vector__XXX
+ SG_ Seg2_TEMP_0 : 0|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Seg2_TEMP_1 : 8|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Seg2_TEMP_2 : 16|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Seg2_TEMP_3 : 24|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Seg2_TEMP_4 : 32|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Seg2_TEMP_5 : 40|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Seg2_TEMP_6 : 48|8@1- (1,0) [-128|127] "" Vector__XXX
 
 BO_ 1161 TPDO_ACC_BOARD_Temp_3: 8 Vector__XXX
- SG_ Seg3_TEMP_0 : 0|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Seg3_TEMP_1 : 8|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Seg3_TEMP_2 : 16|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Seg3_TEMP_3 : 24|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Seg3_TEMP_4 : 32|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Seg3_TEMP_5 : 40|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Seg3_TEMP_6 : 48|8@1+ (1,-40) [-40|215] "" Vector__XXX
+ SG_ Seg3_TEMP_0 : 0|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Seg3_TEMP_1 : 8|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Seg3_TEMP_2 : 16|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Seg3_TEMP_3 : 24|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Seg3_TEMP_4 : 32|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Seg3_TEMP_5 : 40|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Seg3_TEMP_6 : 48|8@1- (1,0) [-128|127] "" Vector__XXX
 
 BO_ 1794 NMT_ACC_HEARTBEAT: 8 Vector__XXX
  SG_ Status : 0|8@1+ (1,0) [0|255] "" Vector__XXX
@@ -160,6 +160,58 @@ BO_ 1160 TPDO_ACC_BOARD_Volt_3: 8 Vector__XXX
  SG_ Seg3_VOLT_4 : 32|8@1+ (0.02,0) [0|5.1] "V" Vector__XXX
  SG_ Seg3_VOLT_5 : 40|8@1+ (0.02,0) [0|5.1] "V" Vector__XXX
  SG_ Seg3_VOLT_6 : 48|8@1+ (0.02,0) [0|5.1] "V" Vector__XXX
+
+BO_ 390 SME_RPDO_Throttle_Demand: 8 Vector__XXX
+ SG_ SME_THROTL_PowerReady : 35|1@1- (1,0) [0|1] "" Vector__XXX
+ SG_ SME_THROTL_MBB_Alive : 40|4@1+ (1,0) [0|15] "" Vector__XXX
+ SG_ SME_THROTL_Reverse : 33|1@1- (1,0) [0|1] "" Vector__XXX
+ SG_ SME_THROTL_Forward : 32|1@1- (1,0) [0|1] "" Vector__XXX
+ SG_ SME_THROTL_MaxSpeed : 16|16@1- (1,0) [-32768|32767] "RPM" Vector__XXX
+ SG_ SME_THROTL_TorqueDemand : 0|16@1- (1,0) [-32767|32767] "Q15" Vector__XXX
+ SG_ SME_THROTL_UNUSED_BIT_1 : 34|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ SME_THROTL_UNUSED_BIT_2 : 36|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ SME_THROTL_UNUSED_BIT_3 : 37|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ SME_THROTL_UNUSED_BIT_4 : 38|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ SME_THROTL_UNUSED_BIT_5 : 39|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ SME_THROTL_UNUSED_BIT_6 : 44|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ SME_THROTL_UNUSED_BIT_7 : 45|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ SME_THROTL_UNUSED_BIT_8 : 46|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ SME_THROTL_UNUSED_BIT_9 : 47|1@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ SME_THROTL_UNUSED_SHORT_1 : 48|16@1+ (1,0) [0|0] "" Vector__XXX
+
+BO_ 646 SME_RPDO_Max_Currents: 8 Vector__XXX
+ SG_ SME_CURRLIM_ChargeCurrentLim : 0|16@1+ (1,0) [0|65535] "A" Vector__XXX
+ SG_ SME_CURRLIM_DischargeCurrentLim : 16|16@1+ (1,0) [0|65535] "A" Vector__XXX
+ SG_ SME_CURRLIM_UNUSED_INT_1 : 32|32@1+ (1,0) [0|0] "" Vector__XXX
+
+BO_ 1153 SME_TPDO_Torque_speed: 8 Vector__XXX
+ SG_ SME_TRQSPD_SOC_Low_Traction : 32|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ SME_TRQSPD_SOC_Low_Hydraulic : 33|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ SME_TRQSPD_Reverse : 34|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ SME_TRQSPD_Forward : 35|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ SME_TRQSPD_Park_Brake : 36|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ SME_TRQSPD_Pedal_Brake : 37|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ SME_TRQSPD_Controller_Overtermp : 38|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ SME_TRQSPD_Key_switch_overvolt : 39|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ SME_TRQSPD_Key_switch_undervolt : 40|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ SME_TRQSPD_Running : 41|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ SME_TRQSPD_Traction : 42|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ SME_TRQSPD_Hydraulic : 43|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ SME_TRQSPD_Powering_Enabled : 44|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ SME_TRQSPD_Powering_Ready : 45|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ SME_TRQSPD_contactor_closed : 47|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ SME_TRQSPD_Precharging : 46|1@1+ (1,0) [0|1] "" Vector__XXX
+ SG_ SME_TRQSPD_Speed : 0|16@1+ (1,0) [-32768|32767] "RPM" Vector__XXX
+ SG_ SME_TRQSPD_MotorFlags : 48|16@1+ (1,0) [0|65535] "" Vector__XXX
+ SG_ SME_TRQSPD_Torque : 16|16@1- (1,0) [-32767|32767] "Q15" Vector__XXX
+
+BO_ 1665 SME_TPDO_Temperature: 8 Vector__XXX
+ SG_ SME_TEMP_FaultLevel : 40|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ SME_TEMP_FaultCode : 32|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ SME_TEMP_DC_Bus_V : 16|16@1+ (0.1,0) [0|6553.5] "V" Vector__XXX
+ SG_ SME_TEMP_ControllerTemperature : 8|8@1+ (1,-40) [0|255] "C" Vector__XXX
+ SG_ SME_TEMP_MotorTemperature : 0|8@1+ (1,-40) [0|255] "C" Vector__XXX
+ SG_ SME_TEMP_BusCurrent : 48|16@1- (0.1,0) [-3276.8|3276.7] "A" Vector__XXX
 
 
 

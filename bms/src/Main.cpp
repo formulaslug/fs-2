@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <array>
 #include <cstdint>
 #include <cstdio>
@@ -35,7 +36,7 @@ void canCurrentLimTX();
 
 
 
-EventQueue queue(4*EVENTS_EVENT_SIZE); // creates an eventqueue which is thread and ISR safe. EVENTS_EVENT_SIZE is the size of the buffer allocated
+EventQueue queue(32*EVENTS_EVENT_SIZE); // creates an eventqueue which is thread and ISR safe. EVENTS_EVENT_SIZE is the size of the buffer allocated
 
 
 
@@ -66,7 +67,8 @@ bool hasFansOn = false;
 bool isBalancing = false;
 
 uint16_t dcBusVoltage;
-uint16_t tsVoltage;
+uint32_t tsVoltagemV;
+//uint16_t tsVoltage;
 uint8_t glvVoltage;
 uint16_t tsCurrent;
 
@@ -103,8 +105,8 @@ int main() {
   Timer t;
   t.start();
   while (1) {
-    glvVoltage = glv_voltage_pin * 18530; // in mV
-    //printf("GLV voltage: %d mV\n", glv_voltage);
+    glvVoltage = (uint8_t)(glv_voltage_pin * 185.3); // in mV
+    //printf("GLV voltage: %d mV\n", glvVoltage * 100);
 
     while (!bmsMailbox->empty()) {
         BmsEvent *bmsEvent;
@@ -126,16 +128,16 @@ int main() {
                 maxCellVolt = bmsEvent->maxVolt;
                 isBalancing = bmsEvent->isBalancing;
 
-                tsVoltage = 0;
+                tsVoltagemV = 0;
 
                 for (int i = 0; i < BMS_BANK_COUNT*BMS_BANK_CELL_COUNT; i++) {
                     allVoltages[i] = bmsEvent->voltageValues[i];
-                    tsVoltage += allVoltages[i];
+                    tsVoltagemV += allVoltages[i];
                     //printf("%d, V: %d\n", i, allVoltages[i]);
                 }
                 for (int i = 0; i < BMS_BANK_COUNT*BMS_BANK_TEMP_COUNT; i++) {
                     allTemps[i] = bmsEvent->temperatureValues[i];
-                    //printf("%d, V: %d\n", i, allTemps[i]);
+                    // printf("%d, T: %d\n", i, allTemps[i]);
                 }
 
                 break;
@@ -173,7 +175,7 @@ int main() {
     }
 
 
-    if (dcBusVoltage >= tsVoltage * PRECHARGE_PERCENT) {
+    if (dcBusVoltage >= (uint16_t)(tsVoltagemV/100.0) * PRECHARGE_PERCENT) {
         prechargeDone = true;
     }
 
@@ -205,21 +207,19 @@ void initIO() {
     canBus = new CAN(BMS_PIN_CAN_RX, BMS_PIN_CAN_TX, BMS_CAN_FREQUENCY);
     canBus->attach(canRX);
 
-    // canBus->write(accBoardBootup());
-
-    int canBootupUD = queue.call(&canBootupTX);
+    queue.call(&canBootupTX);
     queue.dispatch_once();
 
-    int canBoardStateID = queue.call_every(100ms, &canBoardStateTX);
-    int canCurrentLimID = queue.call_every(40ms, &canCurrentLimTX);
-    int canVoltID0 = queue.call_every(200ms, &canVoltTX0);
-    int canVoltID1 = queue.call_every(200ms, &canVoltTX1);
-    int canVoltID2 = queue.call_every(200ms, &canVoltTX2);
-    int canVoltID3 = queue.call_every(200ms, &canVoltTX3);
-    int canTempID0 = queue.call_every(200ms, &canTempTX0);
-    int canTempID1 = queue.call_every(200ms, &canTempTX1);
-    int canTempID2 = queue.call_every(200ms, &canTempTX2);
-    int canTempID3 = queue.call_every(200ms, &canTempTX3);
+    queue.call_every(100ms, &canBoardStateTX);
+    queue.call_every( 40ms, &canCurrentLimTX);
+    queue.call_every(200ms, &canVoltTX0);
+    queue.call_every(200ms, &canVoltTX1);
+    queue.call_every(200ms, &canVoltTX2);
+    queue.call_every(200ms, &canVoltTX3);
+    queue.call_every(200ms, &canTempTX0);
+    queue.call_every(200ms, &canTempTX1);
+    queue.call_every(200ms, &canTempTX2);
+    queue.call_every(200ms, &canTempTX3);
 
 
     fan_control_pin = 0; // turn fans off at start
@@ -244,7 +244,7 @@ void canBootupTX() {
 void canBoardStateTX() {
     canBus->write(accBoardState(
         glvVoltage,
-        tsVoltage,
+        (uint16_t)(tsVoltagemV/100.0),
         hasBmsFault,
         isBalancing,
         prechargeDone,
@@ -257,6 +257,7 @@ void canBoardStateTX() {
         maxCellVolt,
         tsCurrent
     ));
+    ThisThread::sleep_for(1ms);
 }
 
 void canTempTX(uint8_t segment) {
@@ -270,6 +271,7 @@ void canTempTX(uint8_t segment) {
             allTemps[(segment * BMS_BANK_CELL_COUNT) + 6]
     };
     canBus->write(accBoardTemp(segment, temps));
+    ThisThread::sleep_for(1ms);
 }
 
 void canVoltTX(uint8_t segment) {
@@ -283,6 +285,14 @@ void canVoltTX(uint8_t segment) {
             allVoltages[(segment * BMS_BANK_CELL_COUNT) + 6]
     };
     canBus->write(accBoardVolt(segment, volts));
+    ThisThread::sleep_for(1ms);
+}
+
+void canCurrentLimTX() {
+    uint16_t chargeCurrentLimit = 0x0000;
+    uint16_t dischargeCurrentLimit = (uint16_t)(((CAR_MAX_POWER/(tsVoltagemV/1000.0))*CAR_POWER_PERCENT < CAR_CURRENT_MAX) ? (CAR_MAX_POWER/(tsVoltagemV/1000.0)*CAR_POWER_PERCENT) : CAR_CURRENT_MAX);
+    canBus->write(motorControllerCurrentLim(chargeCurrentLimit, dischargeCurrentLimit));
+    ThisThread::sleep_for(1ms);
 }
 
 void canVoltTX0() {
@@ -315,10 +325,4 @@ void canTempTX2() {
 
 void canTempTX3() {
     canTempTX(3);
-}
-
-void canCurrentLimTX() {
-    uint16_t chargeCurrentLimit = 0x0000;
-    uint16_t dischargeCurrentLimit = (uint16_t)(CAR_MAX_POWER/117.6)*CAR_POWER_PERCENT;
-    canBus->write(motorControllerCurrentLim(chargeCurrentLimit, dischargeCurrentLimit));
 }

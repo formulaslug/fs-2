@@ -91,6 +91,10 @@ extern DigitalOut* chargerControl;
 #ifndef CAR_POWER_PERCENT
 #define CAR_POWER_PERCENT 0.95
 #endif
+// maximum allowed current draw by the motor controller
+#ifndef CAR_CURRENT_MAX
+#define CAR_CURRENT_MAX 700
+#endif
 
 // percent of precharge needed to consider precharging done (and close the +AIR)
 #ifndef PRECHARGE_PERCENT

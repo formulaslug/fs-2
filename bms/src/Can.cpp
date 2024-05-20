@@ -1,5 +1,6 @@
 #include "Can.h"
 #include <cstdint>
+#include <cstdio>
 
 CANMessage accBoardBootup() {
   uint8_t startupMessage[8];
@@ -20,23 +21,51 @@ CANMessage accBoardState(uint8_t glvVoltage, uint16_t tsVoltage, bool bmsFault, 
 }
 
 CANMessage accBoardTemp(uint8_t segment, int8_t *temps) {
-    uint8_t data[8];
-    data[0] = segment;
+    uint8_t data[7];
+    uint32_t id;
+    switch (segment) {
+        case 0:
+            id = kTPDO_ACC_BOARD_Temp_0;
+            break;
+        case 1:
+            id = kTPDO_ACC_BOARD_Temp_1;
+            break;
+        case 2:
+            id = kTPDO_ACC_BOARD_Temp_2;
+            break;
+        case 3:
+            id = kTPDO_ACC_BOARD_Temp_3;
+            break;
+    }
     for (int i = 0; i < 7; i++) {
-        data[i+1] = (uint8_t)(temps[i]+40);
+        data[i] = (uint8_t)(temps[i]);
     }
     
-    return CANMessage(kTPDO_ACC_BOARD_Temp, data);
+    return CANMessage(id, data);
 }
 
 CANMessage accBoardVolt(uint8_t segment, uint16_t *volts) {
-    uint8_t data[8];
-    data[0] = segment;
+    uint8_t data[7];
+    uint32_t id;
+    switch (segment) {
+        case 0:
+            id = kTPDO_ACC_BOARD_Volt_0;
+            break;
+        case 1:
+            id = kTPDO_ACC_BOARD_Volt_1;
+            break;
+        case 2:
+            id = kTPDO_ACC_BOARD_Volt_2;
+            break;
+        case 3:
+            id = kTPDO_ACC_BOARD_Volt_3;
+            break;
+    }
     for (int i = 0; i < 7; i++) {
-        data[i+1] = (uint8_t) (50.0*volts[i]/1000.0);
+        data[i] = (uint8_t) (50.0*volts[i]/1000.0);
     }
     
-    return CANMessage(kTPDO_ACC_BOARD_Volt, data);
+    return CANMessage(id, data);
 }
 
 CANMessage motorControllerCurrentLim(uint16_t chargeCurLim, uint16_t dischargeCurLim) {

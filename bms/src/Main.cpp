@@ -36,7 +36,7 @@ void canCurrentLimTX();
 
 
 
-EventQueue queue(32*EVENTS_EVENT_SIZE); // creates an eventqueue which is thread and ISR safe. EVENTS_EVENT_SIZE is the size of the buffer allocated
+EventQueue queue(32*EVENTS_EVENT_SIZE);// creates an eventqueue which is thread and ISR safe. EVENTS_EVENT_SIZE is the size of the buffer allocated
 
 
 
@@ -100,7 +100,6 @@ int main() {
   BMSThread bmsThread(ltcBus, 1, bmsMailbox, mainToBMSMailbox);
   bmsThreadThread.start(callback(&BMSThread::startThread, &bmsThread));
 
-  std::array<int8_t, BMS_BANK_COUNT * BMS_BANK_TEMP_COUNT> allTemps;
   osThreadSetPriority(osThreadGetId(), osPriorityHigh7);
   Timer t;
   t.start();
@@ -197,7 +196,7 @@ int main() {
     // divided by 300 because that's the nominal current reading of the sensor (ie baseline)
     // multiplied by 10 and cast to a uint16 for 1 decimal place
     tsCurrent = ((uint16_t)((current_sense_pin-current_vref_pin)/125.0))*10;
-
+    
     queue.dispatch_once();
     ThisThread::sleep_for(50 - (t.read_ms()%50));
   }

@@ -37,7 +37,7 @@ void sendThrottle();
 
 CircularBuffer<CANMessage, 32> canqueue;
 
-EventQueue queue(4*EVENTS_EVENT_SIZE);
+EventQueue queue(32*EVENTS_EVENT_SIZE);
 
 uint8_t mbbAlive = 0;
 bool powerRdy = Motor_On;
@@ -210,6 +210,9 @@ int main()
         motorForward = true;
         torqueDemand = 100 * pedal_travel;
         maxSpeed = MAXSPEED;
+
+        queue.dispatch_once();
+
     }
 
     main();
@@ -217,6 +220,9 @@ int main()
 
 void initIO() {
     canBus = new CAN(CAN_RX_PIN, CAN_TX_PIN, CAN_FREQ);
+
+    queue.call_every( 20ms, &sendThrottle);
+    queue.call_every(100ms, &sendSync);
 }
 
 

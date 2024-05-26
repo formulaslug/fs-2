@@ -6,6 +6,7 @@
 #include "mbed.h"
 #include <chrono>
 #include <cstdint>
+#include <cstdio>
 
 #if !DEVICE_CAN
 #error [NOT_SUPPORTED] CAN not supported for this target
@@ -97,6 +98,7 @@ float clamp(float value, float low, float high) {
 }
 
 void initIO() {
+    printf("initIO\n");
     canBus = new CAN(CAN_RX_PIN, CAN_TX_PIN, CAN_FREQ);
 
     queue.call_every(20ms, &sendThrottle);
@@ -186,7 +188,8 @@ float getPedalTravel(Timer* implausability_track) {
 }
 
 int main()
-{   
+{
+    printf("main\n");
     set_time(0);
 
     // Initiate CAN Bus 

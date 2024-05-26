@@ -220,6 +220,13 @@ int main()
 
             //TODO read ts rdy signal
             switch (id) {
+                case 0x182:
+                    if (data[3] & 0x4) {
+                        TS_Ready = true;
+                    } else {
+                        TS_Ready = false;
+                    }
+                    break;
                 default:
                     break;
             }

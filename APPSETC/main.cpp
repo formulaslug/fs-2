@@ -141,10 +141,11 @@ void sendThrottle() {
 
 void printStatusMessage() {
     int ts_rdy = TS_Ready ? 1 : 0;
+    int m_on = Motor_On ? 1 : 0;
     int cockpit = Cockpit_D.read();
     float b = brakes.read();
 
-    printf("Cockpit Switch: %i | TS_RDY: %i | BPSD: %f\n", cockpit, ts_rdy, b);
+    printf("Cockpit Switch: %i | TS_RDY: %i | BPSD: %f | Motor_On: %i\n", cockpit, ts_rdy, b, m_on);
 }
 
 float getPedalTravel(Timer* implausability_track) {
@@ -166,21 +167,24 @@ float getPedalTravel(Timer* implausability_track) {
     if(travel_diff > .1f) {
         implausability_track->stop();
         unsigned long long current_time = duration_cast<std::chrono::milliseconds>(implausability_track->elapsed_time()).count();
-        printf("implausability timer: %llu", current_time);
+        printf("implausability timer: %llu\n", current_time);
         if(current_time > 100) {
-            printf("implausability");
+            printf("implausability\n");
             queue.call(implausability);
             implausability_track->stop();
             implausability_track->reset();
         } else {
-            if(implausability_track->elapsed_time() == std::chrono::microseconds(0)) {
-                implausability_track->start();
-            }
+            implausability_track->start();
         }
         
     } else {
         implausability_track->stop();
         implausability_track->reset();
+    }
+
+    if(HE1_read == 0 || HE2_read == 0 || HE1_read >= .9 || HE2_read >= 0.9) {
+        printf("implausability\n");
+        queue.call(implausability);
     }
 
     return pedal_travel;

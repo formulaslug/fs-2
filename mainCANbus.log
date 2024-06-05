@@ -1,7 +1,7 @@
 Conversion Warnings Log
 
 
-MSG_ID: 386 	MSG_TYPE: S 	MSG_NAME: TPDO_ACC_BOARD_State
+MSG_ID: 387 	MSG_TYPE: S 	MSG_NAME: TPDO_ACC_BOARD_State
 	SIG_NAME: BMS_Fault, STATUS: Invalid Max or Min value., ACTION: Value Set to default
 	SIG_NAME: BMS_Balancing, STATUS: Invalid Max or Min value., ACTION: Value Set to default
 	SIG_NAME: Precharge_Done, STATUS: Invalid Max or Min value., ACTION: Value Set to default
@@ -26,10 +26,10 @@ MSG_ID: 390 	MSG_TYPE: S 	MSG_NAME: SME_RPDO_Throttle_Demand
 MSG_ID: 646 	MSG_TYPE: S 	MSG_NAME: SME_RPDO_Max_Currents
 	SIG_NAME: SME_CURRLIM_UNUSED_INT_1, STATUS: Invalid Max or Min value., ACTION: Value Set to default
 
-MSG_ID: 1153 	MSG_TYPE: S 	MSG_NAME: SME_TPDO_Torque_speed
+MSG_ID: 1154 	MSG_TYPE: S 	MSG_NAME: SME_TPDO_Torque_speed
 	SIG_NAME: SME_TRQSPD_Speed, STATUS: Invalid Max or Min value., ACTION: Value Set to default
 
-MSG_ID: 1665 	MSG_TYPE: S 	MSG_NAME: SME_TPDO_Temperature
+MSG_ID: 1666 	MSG_TYPE: S 	MSG_NAME: SME_TPDO_Temperature
 	SIG_NAME: SME_TEMP_ControllerTemperature, STATUS: Invalid Max or Min value., ACTION: Value Set to default
 	SIG_NAME: SME_TEMP_MotorTemperature, STATUS: Invalid Max or Min value., ACTION: Value Set to default
 

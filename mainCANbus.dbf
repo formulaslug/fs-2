@@ -7,7 +7,7 @@
 [BUSMASTER_VERSION] [3.2.2]
 [NUMBER_OF_MESSAGES] 15
 
-[START_MSG] TPDO_ACC_BOARD_State,386,8,13,1,S,
+[START_MSG] TPDO_ACC_BOARD_State,387,8,13,1,S,
 [START_SIGNALS] GLV_Voltage,8,1,0,U,255,0,1,0,0.1,Volts,,
 [START_SIGNALS] TS_Voltage,16,2,0,U,65535,0,1,0,0.1,Volts,,
 [START_SIGNALS] BMS_Fault,1,4,0,B,1,0,1,0,1,,,
@@ -63,7 +63,7 @@
 [START_SIGNALS] Seg3_TEMP_6,8,7,0,I,127,-128,1,0,1,,,
 [END_MSG]
 
-[START_MSG] NMT_ACC_HEARTBEAT,1794,8,1,1,S,
+[START_MSG] NMT_ACC_HEARTBEAT,1795,8,1,1,S,
 [START_SIGNALS] Status,8,1,0,U,255,0,1,0,1,,,
 [VALUE_DESCRIPTION] "Boot up",0
 [VALUE_DESCRIPTION] "Stopped",4
@@ -145,7 +145,7 @@
 [START_SIGNALS] SME_CURRLIM_UNUSED_INT_1,32,5,0,U,4294967295,0,1,0,1,,,
 [END_MSG]
 
-[START_MSG] SME_TPDO_Torque_speed,1153,8,19,1,S,
+[START_MSG] SME_TPDO_Torque_speed,1154,8,19,1,S,
 [START_SIGNALS] SME_TRQSPD_SOC_Low_Traction,1,5,0,B,1,0,1,0,1,,,
 [START_SIGNALS] SME_TRQSPD_SOC_Low_Hydraulic,1,5,1,B,1,0,1,0,1,,,
 [START_SIGNALS] SME_TRQSPD_Reverse,1,5,2,B,1,0,1,0,1,,,
@@ -167,7 +167,7 @@
 [START_SIGNALS] SME_TRQSPD_Torque,16,3,0,I,32767,-32767,1,0,1,Q15,,
 [END_MSG]
 
-[START_MSG] SME_TPDO_Temperature,1665,8,6,1,S,
+[START_MSG] SME_TPDO_Temperature,1666,8,6,1,S,
 [START_SIGNALS] SME_TEMP_FaultLevel,8,6,0,U,255,0,1,0,1,,,
 [START_SIGNALS] SME_TEMP_FaultCode,8,5,0,U,255,0,1,0,1,,,
 [START_SIGNALS] SME_TEMP_DC_Bus_V,16,3,0,U,65535,0,1,0,0.1,V,,
@@ -220,12 +220,12 @@
 [END_DESC_MSG]
 
 [START_DESC_SIG]
-386 S BMS_Fault "Fault High";
-386 S BMS_Balancing "Balancing High";
-386 S Precharge_Done "Done High";
-386 S Charging "Charging High";
-386 S Fans_On "On High";
-386 S Shutdown_Closed "Closed High";
+387 S BMS_Fault "Fault High";
+387 S BMS_Balancing "Balancing High";
+387 S Precharge_Done "Done High";
+387 S Charging "Charging High";
+387 S Fans_On "On High";
+387 S Shutdown_Closed "Closed High";
 644 S Steering_Sensor "90 (left) to -90 (right)";
 [END_DESC_SIG]
 [END_DESC]

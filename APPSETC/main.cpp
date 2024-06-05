@@ -224,7 +224,7 @@ int main()
 
             //TODO read ts rdy signal
             switch (id) {
-                case 0x182:
+                case 0x183:
                     if (data[3] & 0x4) {
                         TS_Ready = true;
                     } else {
@@ -249,14 +249,14 @@ int main()
             powerRdy = Motor_On;
             motorReverse = false;
             motorForward = true;
-            torqueDemand = 100 * pedalTravel; // Dunno if it should be between 0 and 1 or 0 and 100
-            maxSpeed = MAXSPEED;
+            torqueDemand = -100 * pedalTravel; // Dunno if it should be between 0 and 1 or 0 and 100
+            maxSpeed = -MAXSPEED;
         } else {
             powerRdy = false;
             motorReverse = false;
             motorForward = true;
             torqueDemand = 0; // Dunno if it should be between 0 and 1 or 0 and 100
-            maxSpeed = MAXSPEED;
+            maxSpeed = -MAXSPEED;
             printStatusMessage();
         }
 

@@ -9,7 +9,7 @@
 #include "mbed.h"
 
 // SIDs From Accumulator
-constexpr uint32_t kTPDO_ACC_BOARD_State = 0x182;
+constexpr uint32_t kTPDO_ACC_BOARD_State = 0x183;
 
 constexpr uint32_t kTPDO_ACC_BOARD_Temp_0 = 0x189;
 constexpr uint32_t kTPDO_ACC_BOARD_Temp_1 = 0x289;
@@ -21,7 +21,7 @@ constexpr uint32_t kTPDO_ACC_BOARD_Volt_1 = 0x288;
 constexpr uint32_t kTPDO_ACC_BOARD_Volt_2 = 0x388;
 constexpr uint32_t kTPDO_ACC_BOARD_Volt_3 = 0x488;
 
-constexpr uint32_t kNMT_ACC_HEARTBEAT = 0x702;
+constexpr uint32_t kNMT_ACC_HEARTBEAT = 0x703;
 constexpr uint32_t kRPDO_MAX_CURRENTS = 0x286;
 
 /* Bootup message */

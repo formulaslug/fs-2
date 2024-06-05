@@ -63,7 +63,7 @@ BO_ 3221225472 VECTOR__INDEPENDENT_SIG_MSG: 0 Vector__XXX
  SG_ Volt_Segment : 0|8@1+ (1,0) [0|0] "" Vector__XXX
  SG_ Temp_Segment : 0|8@1+ (1,0) [0|255] "" Vector__XXX
 
-BO_ 386 TPDO_ACC_BOARD_State: 8 Vector__XXX
+BO_ 387 TPDO_ACC_BOARD_State: 8 Vector__XXX
  SG_ GLV_Voltage : 0|8@1+ (0.1,0) [0|25.5] "Volts" Vector__XXX
  SG_ TS_Voltage : 8|16@1+ (0.1,0) [0|6553.5] "Volts" Vector__XXX
  SG_ BMS_Fault : 24|1@1+ (1,0) [0|0] "" Vector__XXX
@@ -114,7 +114,7 @@ BO_ 1161 TPDO_ACC_BOARD_Temp_3: 8 Vector__XXX
  SG_ Seg3_TEMP_5 : 40|8@1- (1,0) [-128|127] "" Vector__XXX
  SG_ Seg3_TEMP_6 : 48|8@1- (1,0) [-128|127] "" Vector__XXX
 
-BO_ 1794 NMT_ACC_HEARTBEAT: 8 Vector__XXX
+BO_ 1795 NMT_ACC_HEARTBEAT: 8 Vector__XXX
  SG_ Status : 0|8@1+ (1,0) [0|255] "" Vector__XXX
 
 BO_ 644 TPDO_BSPD_BOARD_Brake: 8 Vector__XXX
@@ -184,7 +184,7 @@ BO_ 646 SME_RPDO_Max_Currents: 8 Vector__XXX
  SG_ SME_CURRLIM_DischargeCurrentLim : 16|16@1+ (1,0) [0|65535] "A" Vector__XXX
  SG_ SME_CURRLIM_UNUSED_INT_1 : 32|32@1+ (1,0) [0|0] "" Vector__XXX
 
-BO_ 1153 SME_TPDO_Torque_speed: 8 Vector__XXX
+BO_ 1154 SME_TPDO_Torque_speed: 8 Vector__XXX
  SG_ SME_TRQSPD_SOC_Low_Traction : 32|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ SME_TRQSPD_SOC_Low_Hydraulic : 33|1@1+ (1,0) [0|1] "" Vector__XXX
  SG_ SME_TRQSPD_Reverse : 34|1@1+ (1,0) [0|1] "" Vector__XXX
@@ -205,7 +205,7 @@ BO_ 1153 SME_TPDO_Torque_speed: 8 Vector__XXX
  SG_ SME_TRQSPD_MotorFlags : 48|16@1+ (1,0) [0|65535] "" Vector__XXX
  SG_ SME_TRQSPD_Torque : 16|16@1- (1,0) [-32767|32767] "Q15" Vector__XXX
 
-BO_ 1665 SME_TPDO_Temperature: 8 Vector__XXX
+BO_ 1666 SME_TPDO_Temperature: 8 Vector__XXX
  SG_ SME_TEMP_FaultLevel : 40|8@1+ (1,0) [0|255] "" Vector__XXX
  SG_ SME_TEMP_FaultCode : 32|8@1+ (1,0) [0|255] "" Vector__XXX
  SG_ SME_TEMP_DC_Bus_V : 16|16@1+ (0.1,0) [0|6553.5] "V" Vector__XXX
@@ -215,12 +215,12 @@ BO_ 1665 SME_TPDO_Temperature: 8 Vector__XXX
 
 
 
-CM_ SG_ 386 BMS_Fault "Fault High";
-CM_ SG_ 386 BMS_Balancing "Balancing High";
-CM_ SG_ 386 Precharge_Done "Done High";
-CM_ SG_ 386 Charging "Charging High";
-CM_ SG_ 386 Fans_On "On High";
-CM_ SG_ 386 Shutdown_Closed "Closed High";
+CM_ SG_ 387 BMS_Fault "Fault High";
+CM_ SG_ 387 BMS_Balancing "Balancing High";
+CM_ SG_ 387 Precharge_Done "Done High";
+CM_ SG_ 387 Charging "Charging High";
+CM_ SG_ 387 Fans_On "On High";
+CM_ SG_ 387 Shutdown_Closed "Closed High";
 CM_ SG_ 644 Steering_Sensor "90 (left) to -90 (right)";
 BA_DEF_ BO_  "CANFD_BRS" ENUM  "0","1";
 BA_DEF_  "BusType" STRING ;
@@ -231,5 +231,5 @@ BA_DEF_DEF_  "BusType" "";
 BA_DEF_DEF_  "ECU" "";
 BA_DEF_DEF_  "VFrameFormat" "StandardCAN";
 BA_ "BusType" "CAN FD";
-VAL_ 1794 Status 0 "Boot up" 4 "Stopped" 5 "Operational" 127 "Pre-operational" ;
+VAL_ 1795 Status 0 "Boot up" 4 "Stopped" 5 "Operational" 127 "Pre-operational" ;
 

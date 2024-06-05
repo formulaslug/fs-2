@@ -48,10 +48,10 @@ EventQueue queue(32*EVENTS_EVENT_SIZE);
 
 uint8_t mbbAlive = 0;
 bool powerRdy = Motor_On;
-bool motorReverse = false;
-bool motorForward = true;
-uint16_t torqueDemand;
-uint16_t maxSpeed = MAXSPEED;
+bool motorReverse = true;
+bool motorForward = false;
+int16_t torqueDemand;
+int16_t maxSpeed = -MAXSPEED;
 
 void runRTDS() {
     printf("RUNNING RTDS");
@@ -247,14 +247,14 @@ int main()
             //Sync message  (ID is 0x80) (Msg is 0x00 100 ms freq)
 
             powerRdy = Motor_On;
-            motorReverse = false;
-            motorForward = true;
+            motorReverse = true;
+            motorForward = false;
             torqueDemand = -100 * pedalTravel; // Dunno if it should be between 0 and 1 or 0 and 100
             maxSpeed = -MAXSPEED;
         } else {
             powerRdy = false;
-            motorReverse = false;
-            motorForward = true;
+            motorReverse = true;
+            motorForward = false;
             torqueDemand = 0; // Dunno if it should be between 0 and 1 or 0 and 100
             maxSpeed = -MAXSPEED;
             printStatusMessage();

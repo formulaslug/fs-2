@@ -61,7 +61,7 @@ AnalogIn current_sense_pin(ACC_BUFFERED_C_OUT);
 AnalogIn glv_voltage_pin(ACC_GLV_VOLTAGE);
 
 bool prechargeDone = false;
-bool hasBmsFault = false;
+bool hasBmsFault = true;
 bool isCharging = false;
 bool hasFansOn = false;
 bool isBalancing = false;
@@ -179,7 +179,7 @@ int main() {
     }
 
     precharge_control_pin = prechargeDone;
-    bms_fault_pin = hasBmsFault;
+    bms_fault_pin = !hasBmsFault;
 
     hasFansOn = (prechargeDone || charge_state_pin);
     

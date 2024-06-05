@@ -252,7 +252,7 @@ void BMSThread::threadWorker() {
     // printf("1 Temps: %d, %d, %d, %d, %d, %d, %d\n", allTemps[7], allTemps[8], allTemps[9], allTemps[10], allTemps[11], allTemps[12], allTemps[13]);
     // printf("2 Temps: %d, %d, %d, %d, %d, %d, %d\n", allTemps[14], allTemps[15], allTemps[16], allTemps[17], allTemps[18], allTemps[19], allTemps[20]);
     // printf("3 Temps: %d, %d, %d, %d, %d, %d, %d\n\n", allTemps[21], allTemps[22], allTemps[23], allTemps[24], allTemps[25], allTemps[26], allTemps[27]);
-    // printf("min temp: %d, max temp: %d\nmin volt: %d, max volt %d\n", minTemp, maxTemp, minVoltage, maxVoltage);
+    printf("min temp: %d, max temp: %d\nmin volt: %d, max volt %d\n", minTemp, maxTemp, minVoltage, maxVoltage);
 
     if (minVoltage <= BMS_FAULT_VOLTAGE_THRESHOLD_LOW ||
         maxVoltage >= BMS_FAULT_VOLTAGE_THRESHOLD_HIGH ||

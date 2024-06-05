@@ -29,11 +29,13 @@ target_sources(${APP_TARGET}
         src/BmsThread.cpp
         src/EnergusTempSensor.cpp
         src/LTC6811.cpp
+        src/Can.cpp
 )
 
 target_link_libraries(${APP_TARGET}
     PRIVATE
         mbed-os
+        mbed-events
         lib-mbed-ltc681x
 )
 

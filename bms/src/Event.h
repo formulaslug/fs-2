@@ -15,6 +15,11 @@ class BmsEvent {
 public:
   uint16_t voltageValues[BMS_BANK_COUNT * BMS_BANK_CELL_COUNT];
   int8_t temperatureValues[BMS_BANK_COUNT * BMS_BANK_TEMP_COUNT];
+  uint8_t minVolt;
+  uint8_t maxVolt;
+  int8_t minTemp;
+  int8_t maxTemp;
+  bool isBalancing;
   BMSThreadState bmsState;
 };
 

@@ -36,6 +36,7 @@ CAN* canBus;
 
 bool TS_Ready = false; 
 bool Motor_On = false;
+bool CANFlag = false;
 
 void initIO();
 void canRX();
@@ -46,12 +47,14 @@ CircularBuffer<CANMessage, 32> canqueue;
 
 EventQueue queue(32*EVENTS_EVENT_SIZE);
 
+CANMessage msg;
+
 uint8_t mbbAlive = 0;
 bool powerRdy = Motor_On;
-bool motorReverse = false;
-bool motorForward = true;
-uint16_t torqueDemand;
-uint16_t maxSpeed = MAXSPEED;
+bool motorReverse = true;
+bool motorForward = false;
+int16_t torqueDemand;
+int16_t maxSpeed = -MAXSPEED;
 
 void runRTDS() {
     printf("RUNNING RTDS");
@@ -103,14 +106,12 @@ void initIO() {
 
     queue.call_every(20ms, &sendThrottle);
     queue.call_every(100ms, &sendSync);
+
+    canBus->attach(canRX);
 }
 
 void canRX() {
-    CANMessage msg;
-
-    if (canBus->read(msg)) {
-        canqueue.push(msg);
-    }
+    CANFlag = true;
 }
 
 void sendSync() {
@@ -144,8 +145,10 @@ void printStatusMessage() {
     int m_on = Motor_On ? 1 : 0;
     int cockpit = Cockpit_D.read();
     float b = brakes.read();
+    float HE1_read = HE1.read();
+    float HE2_read = HE2.read();
 
-    printf("Cockpit Switch: %i | TS_RDY: %i | BPSD: %f | Motor_On: %i\n", cockpit, ts_rdy, b, m_on);
+    printf("Cockpit Switch: %i | TS_RDY: %i | BPSD: %f | Motor_On: %i | HE1: %f | HE2: %f\n", cockpit, ts_rdy, b, m_on, HE1_read, HE2_read);
 }
 
 float getPedalTravel(Timer* implausability_track) {
@@ -158,13 +161,15 @@ float getPedalTravel(Timer* implausability_track) {
     float clamped_HE2 = clamp(HE2_read, HE2_LOW, HE2_HIGH);
     float HE1_travel = (clamped_HE1-HE1_LOW) / (HE1_HIGH - HE1_LOW);
     float HE2_travel = (clamped_HE2-HE2_LOW) / (HE2_HIGH - HE2_LOW);
-    printf("HE1_travel: %f  | HE2_travel: %f\n", HE1_travel, HE2_travel);
+    //printf("HE1_travel: %f  | HE2_travel: %f\n", HE1_travel, HE2_travel);
 
     //implausibility if greater than 10% pedal travel diff for more than 100 ms.
     float pedal_travel = 0.5*(HE1_travel + HE2_travel); // take the avg of the two pedal travels
+    printf("Pedal Travel: %f\n", pedal_travel);
     float travel_diff = std::abs(HE1_travel - HE2_travel);
     
     if(travel_diff > .1f) {
+        queue.dispatch_once();
         implausability_track->stop();
         unsigned long long current_time = duration_cast<std::chrono::milliseconds>(implausability_track->elapsed_time()).count();
         printf("implausability timer: %llu\n", current_time);
@@ -178,11 +183,13 @@ float getPedalTravel(Timer* implausability_track) {
         }
         
     } else {
+        queue.dispatch_once();
         implausability_track->stop();
         implausability_track->reset();
     }
 
     if(HE1_read == 0 || HE2_read == 0 || HE1_read >= .9 || HE2_read >= 0.9) {
+        queue.dispatch_once();
         printf("implausability\n");
         queue.call(implausability);
     }
@@ -198,12 +205,10 @@ int main()
 
     // Initiate CAN Bus 
     initIO();
-    canBus->attach(canRX);
 
     // Begin waiting for start conditions
     printf("Waiting for start conditions!\n");
 
-    // Event for cockpit switch that triggers a check for TS rdy and bpsd
     Cockpit.rise(&cockpit_switch_high);
 
     // Event for closing motor
@@ -213,7 +218,15 @@ int main()
     Timer implausability_timer;
 
     while(1) {
-        
+
+        if(CANFlag) {
+            CANMessage msg;
+            CANFlag = false;
+            
+            if(canBus->read(msg)) {
+                canqueue.push(msg);
+            }
+        }
 
         while (!canqueue.empty()) {
             CANMessage msg;
@@ -226,6 +239,7 @@ int main()
             switch (id) {
                 case 0x183:
                     if (data[3] & 0x4) {
+                        printf("TS RDY rx");
                         TS_Ready = true;
                     } else {
                         TS_Ready = false;
@@ -237,8 +251,9 @@ int main()
         }
 
         if (Motor_On) {
+            // testing implausability
+            // for some reason it is not dispatching send events
             float pedalTravel = getPedalTravel(&implausability_timer);
-
             // THROTTLE (uint16 torquedemand (%of0xffff), uint16 maxspeed (rpm), 
             // bool powerrdy, bool reverse = False, bool forward = True, 
             // uint8 nbbalive (increment and reset when max)) 
@@ -246,22 +261,21 @@ int main()
 
             //Sync message  (ID is 0x80) (Msg is 0x00 100 ms freq)
 
-            powerRdy = Motor_On;
-            motorReverse = false;
-            motorForward = true;
-            torqueDemand = -100 * pedalTravel; // Dunno if it should be between 0 and 1 or 0 and 100
+            powerRdy = true;
+            motorReverse = true;
+            motorForward = false;
+            torqueDemand = int16_t(-100 * pedalTravel); // Dunno if it should be between 0 and 1 or 0 and 100
             maxSpeed = -MAXSPEED;
         } else {
             powerRdy = false;
-            motorReverse = false;
-            motorForward = true;
+            motorReverse = true;
+            motorForward = false;
             torqueDemand = 0; // Dunno if it should be between 0 and 1 or 0 and 100
             maxSpeed = -MAXSPEED;
             printStatusMessage();
         }
 
         queue.dispatch_once();
-
     }
 
 }

@@ -13,7 +13,7 @@
 #endif
 
 #define MAX_V 3.3
-#define BRAKE_TOL 1 
+#define BRAKE_TOL .1
 #define MAXSPEED 4000
 #define CAN_RX_PIN D10
 #define CAN_TX_PIN D2
@@ -30,13 +30,14 @@ AnalogIn HE2(A0);
 AnalogIn brakes(A2);
 InterruptIn Cockpit(D9);
 DigitalIn Cockpit_D(D9);
-DigitalOut RTDScontrol(D7);
+DigitalOut RTDScontrol(D6);
 DigitalOut test_led(LED1);
 CAN* canBus;
 
 bool TS_Ready = false; 
 bool Motor_On = false;
 bool CANFlag = false;
+bool RTDSqueued = false;
 
 void initIO();
 void canRX();
@@ -57,31 +58,36 @@ int16_t torqueDemand;
 int16_t maxSpeed = -MAXSPEED;
 
 void runRTDS() {
-    printf("RUNNING RTDS");
+    printf("RUNNING RTDS\n");
     test_led.write(true);
     RTDScontrol.write(true);
     wait_us(1000000);
     test_led.write(false);
     RTDScontrol.write(false);
-    printf("FINISHED RTDS");
+    printf("FINISHED RTDS\n");
+    RTDSqueued = false;
+}
+
+void check_start_conditions() {
+    if (TS_Ready && brakes.read() >= BRAKE_TOL) {
+        Motor_On = true;
+        if(RTDSqueued){return;}
+        queue.call(&runRTDS);
+        RTDSqueued = true;
+    }
 }
 
 void cockpit_switch_high() {
     wait_us(10000);
     if(Cockpit_D.read() == 0) {return;}
     test_led.write(true);
-    if (TS_Ready && brakes.read() >= BRAKE_TOL) {
-        Motor_On = true;
-        runRTDS();
-    } else {
-        wait_us(10000);
-    }
+    wait_us(10000);
+    queue.call(&check_start_conditions);
     test_led.write(false);
 }
 
 void cockpit_switch_low() {
     wait_us(10000);
-    int signal = Cockpit_D.read();
     if(Cockpit_D.read() == 1) {return;}
     test_led.write(true);
     Motor_On = false;
@@ -148,7 +154,7 @@ void printStatusMessage() {
     float HE1_read = HE1.read();
     float HE2_read = HE2.read();
 
-    printf("Cockpit Switch: %i | TS_RDY: %i | BPSD: %f | Motor_On: %i | HE1: %f | HE2: %f\n", cockpit, ts_rdy, b, m_on, HE1_read, HE2_read);
+    printf("Cockpit Switch: %i | TS_RDY: %i | Brakes: %f | Motor_On: %i | HE1: %f | HE2: %f\n", cockpit, ts_rdy, b, m_on, HE1_read, HE2_read);
 }
 
 float getPedalTravel(Timer* implausability_track) {
@@ -205,7 +211,6 @@ int main()
 
     // Initiate CAN Bus 
     initIO();
-
     // Begin waiting for start conditions
     printf("Waiting for start conditions!\n");
 

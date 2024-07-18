@@ -121,9 +121,8 @@ void canRX() {
 }
 
 void sendSync() {
-    CANMessage syncMessage;
-    syncMessage.id = 0x80;
-    syncMessage.data[0] = 0x00;
+    unsigned char data[0];
+    CANMessage syncMessage(0x80, data, 0);
     canBus->write(syncMessage);
 }
 

@@ -43,6 +43,7 @@ void initIO();
 void canRX();
 void sendSync();
 void sendThrottle();
+void sendState();
 
 CircularBuffer<CANMessage, 32> canqueue;
 
@@ -112,6 +113,7 @@ void initIO() {
 
     queue.call_every(20ms, &sendThrottle);
     queue.call_every(100ms, &sendSync);
+    queue.call_every(100ms, &sendState);
 
     canBus->attach(canRX);
 }
@@ -143,6 +145,32 @@ void sendThrottle() {
     throttleMessage.data[7] = 0x00;
 
     canBus->write(throttleMessage);
+}
+
+void sendState() {
+    // We calculate in a long-winded fashion for debug purposes
+    float HE1_read = HE1.read();
+    float HE2_read = HE2.read();
+    //printf("HE1: %f  | HE2: %f\n", HE1_read, HE2_read);
+
+    float clamped_HE1 = clamp(HE1_read, HE1_LOW, HE1_HIGH);
+    float clamped_HE2 = clamp(HE2_read, HE2_LOW, HE2_HIGH);
+    float HE1_travel = (clamped_HE1-HE1_LOW) / (HE1_HIGH - HE1_LOW);
+    float HE2_travel = (clamped_HE2-HE2_LOW) / (HE2_HIGH - HE2_LOW);
+
+    float pedal_travel = 0.5*(HE1_travel + HE2_travel); // take the avg of the two pedal travels
+
+    CANMessage stateMessage;
+    stateMessage.id = 0x1A1;
+
+    stateMessage.data[0] = 0x00 | ((TS_Ready) | (Motor_On << 1) | (CANFlag << 2) | (RTDSqueued << 3) | (Cockpit_D.read() << 4));
+    stateMessage.data[1] = (signed char)brakes.read();
+    stateMessage.data[2] = (signed char)HE1_read;
+    stateMessage.data[3] = (signed char)HE2_read;
+    stateMessage.data[4] = (signed char)HE1_travel;
+    stateMessage.data[5] = (signed char)HE2_travel;
+    stateMessage.data[6] = (signed char)pedal_travel;
+    stateMessage.data[7] = 0x00;
 }
 
 void printStatusMessage() {

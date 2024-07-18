@@ -116,7 +116,7 @@ void canRX() {
 void sendSync() {
     CANMessage syncMessage;
     syncMessage.id = 0x80;
-    syncMessage.data[0] = 0x00;
+    syncMessage.len = 0;
     canBus->write(syncMessage);
 }
 

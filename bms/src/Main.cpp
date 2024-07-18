@@ -158,7 +158,7 @@ int main() {
         unsigned char* data = msg.data;
 
         switch(id) {
-          case 0x681: // temperature message from MC
+          case 0x682: // temperature message from MC
             dcBusVoltage = (data[2] | (data[3] << 8)); // TODO: check if this is correct
             break;
           default:
@@ -174,22 +174,32 @@ int main() {
     }
 
 
-    if (dcBusVoltage >= (uint16_t)(tsVoltagemV/100.0) * PRECHARGE_PERCENT) {
+
+
+
+
+    if (dcBusVoltage >= (uint16_t)(tsVoltagemV/100.0) * PRECHARGE_PERCENT && tsVoltagemV >= 50000) {
         prechargeDone = true;
     }
 
-    precharge_control_pin = prechargeDone;
+
+
+
+
     bms_fault_pin = !hasBmsFault;
 
-    hasFansOn = (prechargeDone || charge_state_pin);
     
 
     isCharging = charge_state_pin;
     // printf("charge state: %x\n", isCharging);
 
+    precharge_control_pin = isCharging || prechargeDone /*false*/;
+
+    hasFansOn = prechargeDone || isCharging;
+
     charge_enable_pin = isCharging && !hasBmsFault && shutdown_measure_pin;
     fan_control_pin = hasFansOn;
-
+    // printf("charge state: %x, hasBmsFault: %x, shutdown_measure: %x\n", isCharging, hasBmsFault, true && shutdown_measure_pin);
 
     // times 1.5 to change from 3.3v to 5v
     // divided by 0.625 for how the current sensor works :/
@@ -197,6 +207,10 @@ int main() {
     // multiplied by 10 and cast to a uint16 for 1 decimal place
     tsCurrent = ((uint16_t)((current_sense_pin-current_vref_pin)/125.0))*10;
     
+    // printf("Ts current: %d\n", tsCurrent);
+
+    // printf("Error Rx %d - tx %d\n", canBus->rderror(),canBus->tderror());
+
     queue.dispatch_once();
     ThisThread::sleep_for(50 - (t.read_ms()%50));
   }
@@ -204,6 +218,8 @@ int main() {
 
 void initIO() {
     canBus = new CAN(BMS_PIN_CAN_RX, BMS_PIN_CAN_TX, BMS_CAN_FREQUENCY);
+    // canBus->frequency(BMS_CAN_FREQUENCY);
+    // canBus->reset();
     canBus->attach(canRX);
 
     queue.call(&canBootupTX);

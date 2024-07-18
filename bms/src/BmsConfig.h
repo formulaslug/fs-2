@@ -137,7 +137,7 @@ const int BMS_CELL_MAP[12] = {0, 1, 2, 3, -1, -1, 4, 5, 6, -1, -1, -1};
 #ifndef ACC_SHUTDOWN_MEASURE
 
 #ifdef TARGET_NUCLEO_L432KC
-  #define ACC_SHUTDOWN_MEASURE PA_2
+  #define ACC_SHUTDOWN_MEASURE PA_6
 #else
   #error "Unknown board for ACC_SHUTDOWN_MEASURE"
 #endif

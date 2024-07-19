@@ -43,28 +43,3 @@ MSG_ID: 417 	MSG_TYPE: S 	MSG_NAME: TPDO_ETC_BOARD_State
 	SIG_NAME: UNUSED_B, STATUS: Invalid Max or Min value., ACTION: Value Set to default
 	SIG_NAME: UNUSED_C, STATUS: Invalid Max or Min value., ACTION: Value Set to default
 	SIG_NAME: UNUSED_CHAR, STATUS: Invalid Max or Min value., ACTION: Value Set to default
-
-MSG_ID: 1073741824 	MSG_TYPE: X 	MSG_NAME: VECTOR__INDEPENDENT_SIG_MSG
-	SIG_NAME: Max_Cell_Temp, STATUS: No error, ACTION: Signal Discarded
-	SIG_NAME: TEMP_0, STATUS: No error, ACTION: Signal Discarded
-	SIG_NAME: TEMP_1, STATUS: No error, ACTION: Signal Discarded
-	SIG_NAME: TEMP_2, STATUS: No error, ACTION: Signal Discarded
-	SIG_NAME: TEMP_3, STATUS: No error, ACTION: Signal Discarded
-	SIG_NAME: TEMP_4, STATUS: No error, ACTION: Signal Discarded
-	SIG_NAME: TEMP_5, STATUS: No error, ACTION: Signal Discarded
-	SIG_NAME: TEMP_6, STATUS: No error, ACTION: Signal Discarded
-	SIG_NAME: TEMP_0, STATUS: No error, ACTION: Signal Discarded
-	SIG_NAME: TEMP_1, STATUS: No error, ACTION: Signal Discarded
-	SIG_NAME: TEMP_2, STATUS: No error, ACTION: Signal Discarded
-	SIG_NAME: TEMP_3, STATUS: No error, ACTION: Signal Discarded
-	SIG_NAME: TEMP_4, STATUS: No error, ACTION: Signal Discarded
-	SIG_NAME: TEMP_5, STATUS: No error, ACTION: Signal Discarded
-	SIG_NAME: TEMP_6, STATUS: No error, ACTION: Signal Discarded
-	SIG_NAME: TEMP_0, STATUS: No error, ACTION: Signal Discarded
-	SIG_NAME: TEMP_1, STATUS: No error, ACTION: Signal Discarded
-	SIG_NAME: TEMP_2, STATUS: No error, ACTION: Signal Discarded
-	SIG_NAME: TEMP_3, STATUS: No error, ACTION: Signal Discarded
-	SIG_NAME: TEMP_4, STATUS: No error, ACTION: Signal Discarded
-	SIG_NAME: TEMP_5, STATUS: No error, ACTION: Signal Discarded
-	SIG_NAME: TEMP_6, STATUS: No error, ACTION: Signal Discarded
-	SIG_NAME: Temp_Segment, STATUS: No error, ACTION: Signal Discarded

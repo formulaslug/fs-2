@@ -36,34 +36,6 @@ BS_:
 BU_:
 
 
-BO_ 3221225472 VECTOR__INDEPENDENT_SIG_MSG: 0 Vector__XXX
- SG_ Max_Cell_Temp : 56|8@1+ (1,-40) [-40|215] "C" Vector__XXX
- SG_ NewSignal_0004 : 24|8@1+ (1,0) [0|0] "" Vector__XXX
- SG_ TEMP_0 : 0|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ TEMP_1 : 8|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ TEMP_2 : 16|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ TEMP_3 : 24|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ TEMP_4 : 32|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ TEMP_5 : 40|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ TEMP_6 : 48|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ TEMP_0 : 0|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ TEMP_1 : 8|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ TEMP_2 : 16|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ TEMP_3 : 24|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ TEMP_4 : 32|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ TEMP_5 : 40|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ TEMP_6 : 48|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ TEMP_0 : 0|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ TEMP_1 : 8|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ TEMP_2 : 16|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ TEMP_3 : 24|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ TEMP_4 : 32|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ TEMP_5 : 40|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ TEMP_6 : 48|8@1+ (1,-40) [-40|215] "" Vector__XXX
- SG_ Volt_Segment : 0|8@1+ (1,0) [0|0] "" Vector__XXX
- SG_ Temp_Segment : 0|8@1+ (1,0) [0|255] "" Vector__XXX
- SG_ UNUSED_D : 56|8@1+ (1,0) [0|0] "" Vector__XXX
-
 BO_ 387 TPDO_ACC_BOARD_State: 8 Vector__XXX
  SG_ GLV_Voltage : 0|8@1+ (0.1,0) [0|25.5] "Volts" Vector__XXX
  SG_ TS_Voltage : 8|16@1+ (0.1,0) [0|6553.5] "Volts" Vector__XXX

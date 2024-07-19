@@ -178,8 +178,10 @@ int main() {
 
 
 
-    if (dcBusVoltage >= (uint16_t)(tsVoltagemV/100.0) * PRECHARGE_PERCENT && tsVoltagemV >= 50000) {
+    if (dcBusVoltage >= (uint16_t)(tsVoltagemV/100.0) * PRECHARGE_PERCENT && tsVoltagemV >= 60000) {
         prechargeDone = true;
+    } else if (dcBusVoltage < 60000) {
+        prechargeDone = false;
     }
 
 

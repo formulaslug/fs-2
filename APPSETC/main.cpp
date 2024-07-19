@@ -164,13 +164,15 @@ void sendState() {
     stateMessage.id = 0x1A1;
 
     stateMessage.data[0] = 0x00 | ((TS_Ready) | (Motor_On << 1) | (CANFlag << 2) | (RTDSqueued << 3) | (Cockpit_D.read() << 4));
-    stateMessage.data[1] = (signed char)brakes.read();
-    stateMessage.data[2] = (signed char)HE1_read;
-    stateMessage.data[3] = (signed char)HE2_read;
-    stateMessage.data[4] = (signed char)HE1_travel;
-    stateMessage.data[5] = (signed char)HE2_travel;
-    stateMessage.data[6] = (signed char)pedal_travel;
+    stateMessage.data[1] = (int8_t)(brakes.read()*100);
+    stateMessage.data[2] = (int8_t)(HE1_read*100);
+    stateMessage.data[3] = (int8_t)(HE2_read*100);
+    stateMessage.data[4] = (int8_t)(HE1_travel*100);
+    stateMessage.data[5] = (int8_t)(HE2_travel*100);
+    stateMessage.data[6] = (int8_t)(pedal_travel*100);
     stateMessage.data[7] = 0x00;
+    
+    canBus->write(stateMessage);
 }
 
 void printStatusMessage() {
@@ -296,7 +298,7 @@ int main()
             powerRdy = true;
             motorReverse = true;
             motorForward = false;
-            torqueDemand = int16_t(-100 * pedalTravel); // Dunno if it should be between 0 and 1 or 0 and 100
+            torqueDemand = int16_t(-1000 * pedalTravel); // Dunno if it should be between 0 and 1 or 0 and 100
             maxSpeed = -MAXSPEED;
         } else {
             powerRdy = false;

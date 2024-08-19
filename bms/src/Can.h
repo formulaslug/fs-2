@@ -24,6 +24,9 @@ constexpr uint32_t kTPDO_ACC_BOARD_Volt_3 = 0x488;
 constexpr uint32_t kNMT_ACC_HEARTBEAT = 0x703;
 constexpr uint32_t kRPDO_MAX_CURRENTS = 0x286;
 
+constexpr uint32_t kRPDO_ChargeControl = 0x206;
+constexpr uint32_t kRPDO_ChargeLimits = 0x306;
+
 /* Bootup message */
 CANMessage accBoardBootup();
 
@@ -43,5 +46,14 @@ CANMessage accBoardVolt(uint8_t segment, uint16_t *voltages);
 /* RPDO for limiting the current to the Motor Controller (AC-X1) */
 CANMessage motorControllerCurrentLim(uint16_t chargeCurLim,
                                      uint16_t dischargeCurLim);
+
+CANMessage chargerChargeControlRPDO(uint8_t destinationNodeID,
+                                    uint32_t packVoltage, bool evseOverride,
+                                    bool current10xMultiplier, bool enable);
+
+CANMessage chargerMaxAllowedVoltageCurrentRPDO(uint8_t destinationNodeID,
+                                    uint32_t maxAllowedChargeVoltage,
+                                    uint16_t maxAllowedChargeCurrent,
+                                    uint8_t maxAllowedInputCurrentEVSEoverride);
 
 #endif // _FS_BMS_SRC_CAN_H_

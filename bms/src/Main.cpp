@@ -18,6 +18,9 @@
 CAN* canBus;
 
 void initIO();
+void initDrivingCAN();
+void initChargingCAN();
+
 void canRX();
 
 void canBootupTX();
@@ -33,6 +36,13 @@ void canVoltTX1();
 void canVoltTX2();
 void canVoltTX3();
 void canCurrentLimTX();
+
+void canLSS_SwitchStateGlobal();
+void canLSS_SetNodeIDGlobal();
+
+void can_ChargerSync();
+void can_ChargerChargeControl();
+void can_ChargerMaxCurrentVoltage();
 
 
 
@@ -66,7 +76,9 @@ bool isCharging = false;
 bool hasFansOn = false;
 bool isBalancing = false;
 
-uint16_t dcBusVoltage;
+bool chargeEnable = false;
+
+uint16_t dcBusVoltage; // in tenths of volts
 uint32_t tsVoltagemV;
 //uint16_t tsVoltage;
 uint8_t glvVoltage;
@@ -161,6 +173,8 @@ int main() {
           case 0x682: // temperature message from MC
             dcBusVoltage = (data[2] | (data[3] << 8)); // TODO: check if this is correct
             break;
+          case 0x190: // charge status from charger, 180 + node ID (10)
+            dcBusVoltage = (data[2] | (data[3] << 8) | (data[4] << 16) | (data[5] << 24)) / 100;
           default:
             break;
         }
@@ -195,11 +209,13 @@ int main() {
     isCharging = charge_state_pin;
     // printf("charge state: %x\n", isCharging);
 
-    precharge_control_pin = isCharging || prechargeDone /*false*/;
+    precharge_control_pin = prechargeDone /*false*/;
 
     hasFansOn = prechargeDone || isCharging;
 
-    charge_enable_pin = isCharging && !hasBmsFault && shutdown_measure_pin;
+    chargeEnable = isCharging && !hasBmsFault && shutdown_measure_pin && prechargeDone;
+    charge_enable_pin = chargeEnable;
+
     fan_control_pin = hasFansOn;
     // printf("charge state: %x, hasBmsFault: %x, shutdown_measure: %x\n", isCharging, hasBmsFault, true && shutdown_measure_pin);
 
@@ -219,6 +235,11 @@ int main() {
 }
 
 void initIO() {
+    fan_control_pin = 0; // turn fans off at start
+    charge_enable_pin = 0; // charge not allowed at start
+    bms_fault_pin = 0; // assume fault at start, low means fault
+    precharge_control_pin = 0; // positive AIR open at start
+
     canBus = new CAN(BMS_PIN_CAN_RX, BMS_PIN_CAN_TX, BMS_CAN_FREQUENCY);
     // canBus->frequency(BMS_CAN_FREQUENCY);
     // canBus->reset();
@@ -227,6 +248,18 @@ void initIO() {
     queue.call(&canBootupTX);
     queue.dispatch_once();
 
+    ThisThread::sleep_for(1ms);
+    isCharging = charge_state_pin;
+    if (isCharging) {
+        initChargingCAN();
+    } else {
+        initDrivingCAN();
+    }
+
+
+}
+
+void initDrivingCAN() {
     queue.call_every(100ms, &canBoardStateTX);
     queue.call_every( 40ms, &canCurrentLimTX);
     queue.call_every(200ms, &canVoltTX0);
@@ -237,13 +270,23 @@ void initIO() {
     queue.call_every(200ms, &canTempTX1);
     queue.call_every(200ms, &canTempTX2);
     queue.call_every(200ms, &canTempTX3);
+}
 
-
-    fan_control_pin = 0; // turn fans off at start
-    charge_enable_pin = 0; // charge not allowed at start
-    bms_fault_pin = 0; // assume fault at start, low means fault
-    precharge_control_pin = 0; // positive AIR open at start
-
+void initChargingCAN() {
+    ThisThread::sleep_for(100ms);
+    queue.call(&canLSS_SwitchStateGlobal);
+    queue.dispatch_once();
+    ThisThread::sleep_for(5ms);
+    queue.call(&canLSS_SetNodeIDGlobal);
+    queue.dispatch_once();
+    ThisThread::sleep_for(5ms);
+    queue.call(&can_ChargerSync);
+    queue.call(&can_ChargerMaxCurrentVoltage);
+    queue.call(&can_ChargerChargeControl);
+    queue.dispatch_once();
+    queue.call_every(100ms, &can_ChargerSync);
+    queue.call_every(100ms, &can_ChargerMaxCurrentVoltage);
+    queue.call_every(100ms, &can_ChargerChargeControl);
 }
 
 void canRX() {
@@ -342,4 +385,43 @@ void canTempTX2() {
 
 void canTempTX3() {
     canTempTX(3);
+}
+
+
+
+void canLSS_SwitchStateGlobal() { // Switch state global protocal, switch to LSS configuration state
+    uint8_t data[8] = {0x04, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    CANMessage msg(0x7E5, data);
+    canBus->write(msg);
+}
+
+void canLSS_SetNodeIDGlobal() { // Configurate node ID protocal, set node ID to 0x10
+    uint8_t data[8] = {0x11, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    CANMessage msg(0x7E5, data);
+    canBus->write(msg);
+}
+
+void can_ChargerSync() {
+    uint8_t data[0] = {};
+    CANMessage msg(0x80, data, 0);
+    canBus->write(msg);
+}
+
+void can_ChargerChargeControl() {
+    canBus->write(chargerChargeControlRPDO(
+        0x10, // destination node ID
+        0x00000000, // pack voltage; doesn't matter as only for internal charger logging
+        true, // evse override, tells the charger to respect the max AC input current sent in the other message
+        false, // current x10 multipler, only used for certain zero chargers
+        chargeEnable // enable
+    ));
+}
+
+void can_ChargerMaxCurrentVoltage() {
+    canBus->write(chargerMaxAllowedVoltageCurrentRPDO(
+        0x10, // destination node ID
+        116000, // desired voltage, mV
+        29000, // charge current limit, mA
+        15 // input AC voltage, can change to 20 if plugged into nema 5-20, nema 5-15 is standard
+    ));
 }

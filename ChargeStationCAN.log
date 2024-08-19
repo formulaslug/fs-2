@@ -1,0 +1,44 @@
+Conversion Warnings Log
+
+
+MSG_ID: 1034 	MSG_TYPE: S 	MSG_NAME: BMSA_RPDO_CONTROL
+	SIG_NAME: BMS_CNTRL_UNUSED_BIT_1, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_CNTRL_UNUSED_BIT_2, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_CNTRL_UNUSED_BYTE_1, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_CNTRL_UNUSED_BIT_3, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_CNTRL_UNUSED_BIT_4, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_CNTRL_UNUSED_BIT_5, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_CNTRL_UNUSED_BIT_6, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_CNTRL_UNUSED_BIT_7, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_CNTRL_UNUSED_BIT_8, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_CNTRL_UNUSED_BIT_9, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_CNTRL_UNUSED_SHORT_1, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 522 	MSG_TYPE: S 	MSG_NAME: BMSA_RPDO_CONT_PRECHG
+	SIG_NAME: BMS_CONTPRE_UNUSED_BYTE_1, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 394 	MSG_TYPE: S 	MSG_NAME: BMSA_TPDO_STATUS
+	SIG_NAME: BMS_STAT_CURRENT_MA, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_STAT_CHG_NEEDED, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_STAT_STRG_MODE, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_STAT_CELL_ANOM, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_STAT_BATT_LVC, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_STAT_FAULT_FUSE_TEMP, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_STAT_VALID_ISO_RESULT, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_STAT_STAT2_LPBP_LOW, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_STAT_STAT2_UNUSED_BIT_1, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_STAT_STAT2_UNUSED_BIT_2, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_STAT_STAT2_UNUSED_BIT_3, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_STAT_STAT2_UNUSED_BIT_4, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_STAT_STAT2_UNUSED_BIT_5, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_STAT_STAT2_UNUSED_BIT_6, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_STAT_STAT2_UNUSED_BIT_7, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 778 	MSG_TYPE: S 	MSG_NAME: BMSA_RPDO_ISOLATION
+	SIG_NAME: BMS_ISO_UNUSED_BYTE_1, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 1290 	MSG_TYPE: S 	MSG_NAME: BMSA_RPDO_TARGET
+	SIG_NAME: BMS_TARG_DEST_NODE_ID, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_TARG_CHG_SOC_TRG, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_TARG_VOLTAGE, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: BMS_TARG_UNUSED_INT_1, STATUS: Invalid Max or Min value., ACTION: Value Set to default

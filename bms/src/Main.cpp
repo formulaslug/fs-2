@@ -420,7 +420,7 @@ void can_ChargerChargeControl() {
 void can_ChargerMaxCurrentVoltage() {
     canBus->write(chargerMaxAllowedVoltageCurrentRPDO(
         0x10, // destination node ID
-        116000, // desired voltage, mV
+        CHARGE_VOLTAGE*1000, // desired voltage, mV
         29000, // charge current limit, mA
         15 // input AC voltage, can change to 20 if plugged into nema 5-20, nema 5-15 is standard
     ));

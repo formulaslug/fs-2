@@ -101,6 +101,11 @@ extern DigitalOut* chargerControl;
 #define PRECHARGE_PERCENT 0.95
 #endif
 
+// voltage to charge to
+#ifndef CHARGE_VOLTAGE
+#define CHARGE_VOLTAGE 115
+#endif
+
 
 // BMS Cell lookup
 //

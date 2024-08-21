@@ -219,13 +219,17 @@ int main() {
     fan_control_pin = hasFansOn;
     // printf("charge state: %x, hasBmsFault: %x, shutdown_measure: %x\n", isCharging, hasBmsFault, true && shutdown_measure_pin);
 
-    // times 1.5 to change from 3.3v to 5v
-    // divided by 0.625 for how the current sensor works :/
-    // divided by 300 because that's the nominal current reading of the sensor (ie baseline)
-    // multiplied by 10 and cast to a uint16 for 1 decimal place
-    tsCurrent = ((uint16_t)((current_sense_pin-current_vref_pin)/125.0))*10;
     
-    // printf("Ts current: %d\n", tsCurrent);
+    float cSense = (current_sense_pin) * 5; // x5 for 5 volts, pin is number from 0-1
+    float cVref = (current_vref_pin) * 5; // x5 for 5 volts, pin is number from 0-1
+
+    // divided by 0.625 for how the current sensor works :/
+    // times by 300 because that's the nominal current reading of the sensor (ie baseline)
+    // multiplied by 10 and cast to a uint16 for 1 decimal place
+    tsCurrent = (uint16_t)((cSense-cVref)*4800);
+
+    
+    printf("cSense: %d, cVref: %d, Ts current: %d\n", (uint16_t)(cSense*10000), (uint16_t)(cVref*10000), tsCurrent);
 
     // printf("Error Rx %d - tx %d\n", canBus->rderror(),canBus->tderror());
 

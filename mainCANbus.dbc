@@ -47,8 +47,8 @@ BO_ 387 TPDO_ACC_BOARD_State: 8 Vector__XXX
  SG_ Shutdown_Closed : 29|1@1+ (1,0) [0|0] "" Vector__XXX
  SG_ UNUSED_a : 30|1@1+ (1,0) [0|0] "" Vector__XXX
  SG_ UNUSED_b : 31|1@1+ (1,0) [0|0] "" Vector__XXX
- SG_ Min_Cell_Voltage : 32|8@1+ (0.02,0) [0|5.1] "Volts" Vector__XXX
- SG_ Max_Cell_Voltage : 40|8@1+ (0.02,0) [0|5.1] "Volts" Vector__XXX
+ SG_ Max_Cell_Temp : 32|8@1- (1,0) [-128|127] "" Vector__XXX
+ SG_ Avg_Cell_Temp : 40|8@1- (1,0) [-128|127] "" Vector__XXX
  SG_ TS_Current : 48|16@1- (0.1,0) [-3276.8|3276.7] "Amps" Vector__XXX
 
 BO_ 393 TPDO_ACC_BOARD_Temp_0: 8 Vector__XXX

@@ -10,8 +10,8 @@ CANMessage accBoardBootup() {
 CANMessage accBoardState(uint8_t glvVoltage, uint16_t tsVoltage, bool bmsFault,
                          bool bmsBalancing, bool prechargeDone, bool charging,
                          bool fansOn, bool shutdownClosed, bool unused_A,
-                         bool unused_B, uint8_t minCellVoltage,
-                         uint8_t maxCellVoltage, int16_t tsCurrent) {
+                         bool unused_B, uint8_t maxCellTemp,
+                         uint8_t avgCellTemp, int16_t tsCurrent) {
   uint8_t data[8];
   data[0] = glvVoltage;
   data[1] = tsVoltage;
@@ -19,8 +19,8 @@ CANMessage accBoardState(uint8_t glvVoltage, uint16_t tsVoltage, bool bmsFault,
   data[3] = bmsFault + (bmsBalancing << 1) + (prechargeDone << 2) +
             (charging << 3) + (fansOn << 4) + (shutdownClosed << 5) +
             (unused_A << 6) + (unused_B << 7);
-  data[4] = minCellVoltage;
-  data[5] = maxCellVoltage;
+  data[4] = maxCellTemp;
+  data[5] = avgCellTemp;
   data[6] = tsCurrent;
   data[7] = tsCurrent >> 8;
   return CANMessage(kTPDO_ACC_BOARD_State, data);

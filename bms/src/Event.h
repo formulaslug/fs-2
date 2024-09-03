@@ -19,6 +19,7 @@ public:
   uint8_t maxVolt;
   int8_t minTemp;
   int8_t maxTemp;
+  int8_t avgTemp;
   bool isBalancing;
   BMSThreadState bmsState;
 };

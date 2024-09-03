@@ -241,13 +241,17 @@ void BMSThread::threadWorker() {
     
     int8_t minTemp = allTemps[0];
     int8_t maxTemp = 0;
+    int8_t avgTemp = 0;
+    int16_t tempSum = 0;
     for (int i = 0; i < BMS_BANK_COUNT * BMS_BANK_TEMP_COUNT; i++) {
+      tempSum += allTemps[i];
       if (allTemps[i] < minTemp) {
         minTemp = allTemps[i];
       } else if (allTemps[i] > maxTemp) {
         maxTemp = allTemps[i];
       }
     }
+    avgTemp = tempSum / (BMS_BANK_COUNT * BMS_BANK_TEMP_COUNT);
     // printf("0 Temps: %d, %d, %d, %d, %d, %d, %d\n", allTemps[0], allTemps[1], allTemps[2], allTemps[3], allTemps[4], allTemps[5], allTemps[6]);
     // printf("1 Temps: %d, %d, %d, %d, %d, %d, %d\n", allTemps[7], allTemps[8], allTemps[9], allTemps[10], allTemps[11], allTemps[12], allTemps[13]);
     // printf("2 Temps: %d, %d, %d, %d, %d, %d, %d\n", allTemps[14], allTemps[15], allTemps[16], allTemps[17], allTemps[18], allTemps[19], allTemps[20]);
@@ -317,6 +321,7 @@ void BMSThread::threadWorker() {
         msg->maxVolt = (uint8_t)(maxVoltage*50/1000.0);
         msg->minTemp = minTemp;
         msg->maxTemp = maxTemp;
+        msg->avgTemp = avgTemp;
         bmsEventMailbox->put((BmsEvent *)msg);
     }
     

@@ -87,8 +87,8 @@ uint16_t tsCurrent;
 uint16_t allVoltages[BMS_BANK_COUNT*BMS_BANK_CELL_COUNT];
 int8_t allTemps[BMS_BANK_COUNT*BMS_BANK_TEMP_COUNT];
 
-int8_t minCellVolt; // factor of 0.02 so 255 is 5.1 volts
-int8_t maxCellVolt; // factor of 0.02 so 255 is 5.1 volts
+int8_t avgCellTemp; // in c
+int8_t maxCellTemp; // in c
 
 int main() {
 
@@ -135,8 +135,8 @@ int main() {
             case BMSThreadState::BMSIdle:
                 hasBmsFault = false;
 
-                minCellVolt = bmsEvent->minVolt;
-                maxCellVolt = bmsEvent->maxVolt;
+                maxCellTemp = bmsEvent->maxTemp;
+                avgCellTemp = bmsEvent->avgTemp;
                 isBalancing = bmsEvent->isBalancing;
 
                 tsVoltagemV = 0;
@@ -229,7 +229,7 @@ int main() {
     tsCurrent = (uint16_t)((cSense-cVref)*4800);
 
     
-    printf("cSense: %d, cVref: %d, Ts current: %d\n", (uint16_t)(cSense*10000), (uint16_t)(cVref*10000), tsCurrent);
+    // printf("cSense: %d, cVref: %d, Ts current: %d\n", (uint32_t)(cSense*10000), (uint32_t)(cVref*10000), tsCurrent);
 
     // printf("Error Rx %d - tx %d\n", canBus->rderror(),canBus->tderror());
 
@@ -317,8 +317,8 @@ void canBoardStateTX() {
         shutdown_measure_pin,
         false,
         false,
-        minCellVolt,
-        maxCellVolt,
+        maxCellTemp,
+        avgCellTemp,
         tsCurrent
     ));
     ThisThread::sleep_for(1ms);

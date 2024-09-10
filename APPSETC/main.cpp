@@ -14,10 +14,11 @@
 
 #define MAX_V 3.3
 #define BRAKE_TOL .1
-#define MAXSPEED 4000
+#define MAXSPEED 7500
 #define CAN_RX_PIN D10
 #define CAN_TX_PIN D2
 #define CAN_FREQ 500000
+#define MAX_TORQUE 20000
 
 // Constant tested range of values for pedal travel calculation
 const float HE1_LOW = .28;
@@ -70,7 +71,7 @@ void runRTDS() {
 }
 
 void check_start_conditions() {
-    if (TS_Ready && brakes.read() >= BRAKE_TOL) {
+    if (TS_Ready/* && brakes.read() >= BRAKE_TOL*/) {
         Motor_On = true;
         if(RTDSqueued){return;}
         queue.call(&runRTDS);
@@ -252,7 +253,7 @@ int main()
     Timer implausability_timer;
 
     while(1) {
-
+        // printf("loop\n");
         if(CANFlag) {
             CANMessage msg;
             CANFlag = false;
@@ -298,7 +299,7 @@ int main()
             powerRdy = true;
             motorReverse = true;
             motorForward = false;
-            torqueDemand = int16_t(-1000 * pedalTravel); // Dunno if it should be between 0 and 1 or 0 and 100
+            torqueDemand = int16_t(-MAX_TORQUE * pedalTravel); // Dunno if it should be between 0 and 1 or 0 and 100
             maxSpeed = -MAXSPEED;
         } else {
             powerRdy = false;

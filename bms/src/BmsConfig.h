@@ -36,7 +36,7 @@ extern DigitalOut* chargerControl;
 //
 // Units: degrees celcius
 #ifndef BMS_FAULT_TEMP_THRESHOLD_HIGH
-#define BMS_FAULT_TEMP_THRESHOLD_HIGH 55
+#define BMS_FAULT_TEMP_THRESHOLD_HIGH 60
 #endif
 
 // Upper threshold when fault will be thrown for cell temperature when charging
@@ -46,7 +46,7 @@ extern DigitalOut* chargerControl;
 #define BMS_FAULT_TEMP_THRESHOLD_CHARING_HIGH 45
 #endif
 
-// Upper threshold when fault will be thrown for cell temperature
+// Lower threshold when fault will be thrown for cell temperature
 //
 // Units: degrees celcius
 #ifndef BMS_FAULT_TEMP_THRESHOLD_LOW
@@ -93,7 +93,7 @@ extern DigitalOut* chargerControl;
 #endif
 // maximum allowed current draw by the motor controller
 #ifndef CAR_CURRENT_MAX
-#define CAR_CURRENT_MAX 700
+#define CAR_CURRENT_MAX 600
 #endif
 
 // percent of precharge needed to consider precharging done (and close the +AIR)

@@ -234,7 +234,7 @@ int main() {
     // printf("Error Rx %d - tx %d\n", canBus->rderror(),canBus->tderror());
 
     queue.dispatch_once();
-    ThisThread::sleep_for(50 - (t.read_ms()%50));
+    ThisThread::sleep_for(10 - (t.read_ms()%10));
   }
 }
 
@@ -265,7 +265,7 @@ void initIO() {
 
 void initDrivingCAN() {
     queue.call_every(100ms, &canBoardStateTX);
-    queue.call_every( 40ms, &canCurrentLimTX);
+    queue.call_every( 20ms, &canCurrentLimTX);
     queue.call_every(200ms, &canVoltTX0);
     queue.call_every(200ms, &canVoltTX1);
     queue.call_every(200ms, &canVoltTX2);

@@ -54,21 +54,25 @@ CANMessage msg;
 
 uint8_t mbbAlive = 0;
 bool powerRdy = Motor_On;
-bool motorReverse = true;
-bool motorForward = false;
+bool motorReverse = false;
+bool motorForward = true;
 int16_t torqueDemand;
-int16_t maxSpeed = -MAXSPEED;
+int16_t maxSpeed = MAXSPEED;
 
-void runRTDS() {
-    printf("RUNNING RTDS\n");
-    test_led.write(true);
-    RTDScontrol.write(true);
-    wait_us(1000000);
+void stopRTDS() {
     test_led.write(false);
     RTDScontrol.write(false);
     printf("FINISHED RTDS\n");
     RTDSqueued = false;
 }
+
+void runRTDS() {
+    printf("RUNNING RTDS\n");
+    test_led.write(true);
+    RTDScontrol.write(true);
+    queue.call_in(1000ms, &stopRTDS);
+}
+
 
 void check_start_conditions() {
     if (TS_Ready/* && brakes.read() >= BRAKE_TOL*/) {
@@ -80,20 +84,20 @@ void check_start_conditions() {
 }
 
 void cockpit_switch_high() {
-    wait_us(10000);
+    wait_us(10);
     if(Cockpit_D.read() == 0) {return;}
     test_led.write(true);
-    wait_us(10000);
+    wait_us(10);
     queue.call(&check_start_conditions);
     test_led.write(false);
 }
 
 void cockpit_switch_low() {
-    wait_us(10000);
+    wait_us(10);
     if(Cockpit_D.read() == 1) {return;}
     test_led.write(true);
     Motor_On = false;
-    wait_us(10000);
+    wait_us(10);
     test_led.write(false);
 }
 
@@ -184,7 +188,7 @@ void printStatusMessage() {
     float HE1_read = HE1.read();
     float HE2_read = HE2.read();
 
-    printf("Cockpit Switch: %i | TS_RDY: %i | Brakes: %f | Motor_On: %i | HE1: %f | HE2: %f\n", cockpit, ts_rdy, b, m_on, HE1_read, HE2_read);
+    // printf("Cockpit Switch: %i | TS_RDY: %i | Brakes: %f | Motor_On: %i | HE1: %f | HE2: %f\n", cockpit, ts_rdy, b, m_on, HE1_read, HE2_read);
 }
 
 float getPedalTravel(Timer* implausability_track) {
@@ -274,7 +278,7 @@ int main()
             switch (id) {
                 case 0x183:
                     if (data[3] & 0x4) {
-                        printf("TS RDY rx");
+                        // printf("TS RDY rx");
                         TS_Ready = true;
                     } else {
                         TS_Ready = false;
@@ -297,16 +301,16 @@ int main()
             //Sync message  (ID is 0x80) (Msg is 0x00 100 ms freq)
 
             powerRdy = true;
-            motorReverse = true;
-            motorForward = false;
-            torqueDemand = int16_t(-MAX_TORQUE * pedalTravel); // Dunno if it should be between 0 and 1 or 0 and 100
-            maxSpeed = -MAXSPEED;
+            motorReverse = false;
+            motorForward = true;
+            torqueDemand = int16_t(MAX_TORQUE * pedalTravel); // Dunno if it should be between 0 and 1 or 0 and 100
+            maxSpeed = MAXSPEED;
         } else {
             powerRdy = false;
-            motorReverse = true;
-            motorForward = false;
+            motorReverse = false;
+            motorForward = true;
             torqueDemand = 0; // Dunno if it should be between 0 and 1 or 0 and 100
-            maxSpeed = -MAXSPEED;
+            maxSpeed = MAXSPEED;
             printStatusMessage();
         }
 

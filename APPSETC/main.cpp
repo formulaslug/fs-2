@@ -21,16 +21,15 @@
 #define MAX_TORQUE 20000
 
 // Constant tested range of values for pedal travel calculation
-const float HE1_LOW = .28;
-const float HE1_HIGH = .85;
-const float HE2_LOW = .21;
-const float HE2_HIGH = .65;
+const float HE1_LOW = .15;
+const float HE1_HIGH = .73;
+const float HE2_LOW = .14;
+const float HE2_HIGH = .57;
 
 AnalogIn HE1(A1);
 AnalogIn HE2(A0);
 AnalogIn brakes(A2);
 InterruptIn Cockpit(D9);
-DigitalIn Cockpit_D(D9);
 DigitalOut RTDScontrol(D6);
 DigitalOut test_led(LED1);
 CAN* canBus;
@@ -46,11 +45,7 @@ void sendSync();
 void sendThrottle();
 void sendState();
 
-CircularBuffer<CANMessage, 32> canqueue;
-
-EventQueue queue(32*EVENTS_EVENT_SIZE);
-
-CANMessage msg;
+EventQueue queue(64*EVENTS_EVENT_SIZE);
 
 uint8_t mbbAlive = 0;
 bool powerRdy = Motor_On;
@@ -59,22 +54,42 @@ bool motorForward = true;
 int16_t torqueDemand;
 int16_t maxSpeed = MAXSPEED;
 
-void stopRTDS() {
-    test_led.write(false);
-    RTDScontrol.write(false);
-    printf("FINISHED RTDS\n");
-    RTDSqueued = false;
-}
+void runRTDS();
+void stopRTDS();
+void check_start_conditions();
+void cockpit_switch_high();
+void cockpit_switch_low();
+void check_switch_low();
+void implausability();
+void initIO();
+void canRX();
+void sendSync();
+void sendThrottle();
+void sendState();
+void printStatusMessage();
+float getPedalTravel(Timer* implausability_track);
+
 
 void runRTDS() {
-    printf("RUNNING RTDS\n");
-    test_led.write(true);
+    // printf("RUNNING RTDS\n");
+    // test_led.write(true);
     RTDScontrol.write(true);
     queue.call_in(1000ms, &stopRTDS);
 }
 
+void stopRTDS() {
+    // test_led.write(false);
+    RTDScontrol.write(false);
+    // printf("FINISHED RTDS\n");
+    RTDSqueued = false;
+}
+
+void cockpit_switch_high() {
+    queue.call_in(10ms, &check_start_conditions);
+}
 
 void check_start_conditions() {
+    if(Cockpit.read() == 0) {return;}
     if (TS_Ready/* && brakes.read() >= BRAKE_TOL*/) {
         Motor_On = true;
         if(RTDSqueued){return;}
@@ -83,26 +98,17 @@ void check_start_conditions() {
     }
 }
 
-void cockpit_switch_high() {
-    wait_us(10);
-    if(Cockpit_D.read() == 0) {return;}
-    test_led.write(true);
-    wait_us(10);
-    queue.call(&check_start_conditions);
-    test_led.write(false);
+void cockpit_switch_low() {
+    queue.call_in(10ms, &check_switch_low);
 }
 
-void cockpit_switch_low() {
-    wait_us(10);
-    if(Cockpit_D.read() == 1) {return;}
-    test_led.write(true);
+void check_switch_low() {
+    if(Cockpit.read() == 1) {return;}
     Motor_On = false;
-    wait_us(10);
-    test_led.write(false);
 }
 
 void implausability() {
-    printf("implausability occured");
+    // printf("implausability occured");
     Motor_On = false;
 }
 
@@ -112,16 +118,6 @@ float clamp(float value, float low, float high) {
     return value;
 }
 
-void initIO() {
-    printf("initIO\n");
-    canBus = new CAN(CAN_RX_PIN, CAN_TX_PIN, CAN_FREQ);
-
-    queue.call_every(20ms, &sendThrottle);
-    queue.call_every(100ms, &sendSync);
-    queue.call_every(100ms, &sendState);
-
-    canBus->attach(canRX);
-}
 
 void canRX() {
     CANFlag = true;
@@ -168,7 +164,7 @@ void sendState() {
     CANMessage stateMessage;
     stateMessage.id = 0x1A1;
 
-    stateMessage.data[0] = 0x00 | ((TS_Ready) | (Motor_On << 1) | (CANFlag << 2) | (RTDSqueued << 3) | (Cockpit_D.read() << 4));
+    stateMessage.data[0] = 0x00 | ((TS_Ready) | (Motor_On << 1) | (CANFlag << 2) | (RTDSqueued << 3) | (Cockpit.read() << 4));
     stateMessage.data[1] = (int8_t)(brakes.read()*100);
     stateMessage.data[2] = (int8_t)(HE1_read*100);
     stateMessage.data[3] = (int8_t)(HE2_read*100);
@@ -183,7 +179,7 @@ void sendState() {
 void printStatusMessage() {
     int ts_rdy = TS_Ready ? 1 : 0;
     int m_on = Motor_On ? 1 : 0;
-    int cockpit = Cockpit_D.read();
+    int cockpit = Cockpit.read();
     float b = brakes.read();
     float HE1_read = HE1.read();
     float HE2_read = HE2.read();
@@ -205,33 +201,24 @@ float getPedalTravel(Timer* implausability_track) {
 
     //implausibility if greater than 10% pedal travel diff for more than 100 ms.
     float pedal_travel = 0.5*(HE1_travel + HE2_travel); // take the avg of the two pedal travels
-    printf("Pedal Travel: %f\n", pedal_travel);
+    // printf("Pedal Travel: %f\n", pedal_travel);
     float travel_diff = std::abs(HE1_travel - HE2_travel);
     
     if(travel_diff > .1f) {
-        queue.dispatch_once();
-        implausability_track->stop();
-        unsigned long long current_time = duration_cast<std::chrono::milliseconds>(implausability_track->elapsed_time()).count();
-        printf("implausability timer: %llu\n", current_time);
-        if(current_time > 100) {
-            printf("implausability\n");
-            queue.call(implausability);
-            implausability_track->stop();
-            implausability_track->reset();
+        if (implausability_track->elapsed_time() > 100ms) {
+            implausability();
         } else {
             implausability_track->start();
         }
         
     } else {
-        queue.dispatch_once();
         implausability_track->stop();
         implausability_track->reset();
     }
 
-    if(HE1_read == 0 || HE2_read == 0 || HE1_read >= .9 || HE2_read >= 0.9) {
-        queue.dispatch_once();
-        printf("implausability\n");
-        queue.call(implausability);
+    if(HE1_read == 0 || HE2_read == 0 || HE1_read >= 0.9 || HE2_read >= 0.9) {
+        // printf("implausability\n");
+        implausability();
     }
 
     return pedal_travel;
@@ -240,18 +227,10 @@ float getPedalTravel(Timer* implausability_track) {
 
 int main()
 {
-    printf("main\n");
-    set_time(0);
-
+    // printf("main\n");
     // Initiate CAN Bus 
     initIO();
     // Begin waiting for start conditions
-    printf("Waiting for start conditions!\n");
-
-    Cockpit.rise(&cockpit_switch_high);
-
-    // Event for closing motor
-    Cockpit.fall(&cockpit_switch_low);
 
     // forward decl. for timer tracking 100ms implausabilities for rules
     Timer implausability_timer;
@@ -263,29 +242,21 @@ int main()
             CANFlag = false;
             
             if(canBus->read(msg)) {
-                canqueue.push(msg);
-            }
-        }
+                uint32_t id = msg.id;
+                unsigned char* data = msg.data;
 
-        while (!canqueue.empty()) {
-            CANMessage msg;
-            canqueue.pop(msg);
-
-            uint32_t id = msg.id;
-            unsigned char* data = msg.data;
-
-            //TODO read ts rdy signal
-            switch (id) {
-                case 0x183:
-                    if (data[3] & 0x4) {
-                        // printf("TS RDY rx");
-                        TS_Ready = true;
-                    } else {
-                        TS_Ready = false;
-                    }
-                    break;
-                default:
-                    break;
+                switch (id) {
+                    case 0x183:
+                        if (data[3] & 0x4) {
+                            // printf("TS RDY rx");
+                            TS_Ready = true;
+                        } else {
+                            TS_Ready = false;
+                        }
+                        break;
+                    default:
+                        break;
+                }
             }
         }
 
@@ -309,13 +280,31 @@ int main()
             powerRdy = false;
             motorReverse = false;
             motorForward = true;
-            torqueDemand = 0; // Dunno if it should be between 0 and 1 or 0 and 100
+            torqueDemand = 0; 
             maxSpeed = MAXSPEED;
-            printStatusMessage();
+            // printStatusMessage();
         }
 
         queue.dispatch_once();
+        ThisThread::sleep_for(1ms);
     }
 
 }
 
+void initIO() {
+    // printf("initIO\n");
+    canBus = new CAN(CAN_RX_PIN, CAN_TX_PIN, CAN_FREQ);
+
+    queue.call_every(20ms, &sendThrottle);
+    queue.call_every(100ms, &sendSync);
+    queue.call_every(100ms, &sendState);
+
+    canBus->attach(canRX);
+    
+    // printf("Waiting for start conditions!\n");
+
+    Cockpit.rise(&cockpit_switch_high);
+
+    // Event for closing motor
+    Cockpit.fall(&cockpit_switch_low);
+}

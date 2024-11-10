@@ -394,6 +394,9 @@ enum class BMSThreadState {
     //   wait for either faults or a signal to move in to charging state
     BMSIdle,
 
+    // potential BMS fault, move to BMS fault if persists for another BMS thread cycle
+    BMSFaultRecover,
+
     // BMS in failure mode
     BMSFault
 };

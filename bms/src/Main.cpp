@@ -40,6 +40,8 @@ void canCurrentLimTX();
 void canLSS_SwitchStateGlobal();
 void canLSS_SetNodeIDGlobal();
 
+void checkPrechargeVoltage();
+
 void can_ChargerSync();
 void can_ChargerChargeControl();
 void can_ChargerMaxCurrentVoltage();
@@ -131,8 +133,10 @@ int main() {
 
         switch (bmsEvent->bmsState) {
             case BMSThreadState::BMSStartup:
+                printf("BMS Fault Startup State\n");
                 break;
             case BMSThreadState::BMSIdle:
+                // printf("BMS Fault Idle State\n");
                 hasBmsFault = false;
 
                 maxCellTemp = bmsEvent->maxTemp;
@@ -152,11 +156,15 @@ int main() {
                 }
 
                 break;
+            case BMSThreadState::BMSFaultRecover:
+                printf("BMS Fault Recovery State\n");
+                break;
             case BMSThreadState::BMSFault:
                 printf("*** BMS FAULT ***\n");
                 hasBmsFault = true;
                 break;
             default:
+                printf("FUBAR\n");
                 break;
         }
         delete bmsEvent;
@@ -186,6 +194,11 @@ int main() {
         mainToBMSEvent->charging = isCharging;
         mainToBMSMailbox->put(mainToBMSEvent);
     }
+    
+
+    if (!shutdown_measure_pin) {
+        prechargeDone = false;
+    }
 
 
 
@@ -194,8 +207,9 @@ int main() {
 
     if (dcBusVoltage >= (uint16_t)(tsVoltagemV/100.0) * PRECHARGE_PERCENT && tsVoltagemV >= 60000) {
         prechargeDone = true;
-    } else if (dcBusVoltage < 60000) {
-        prechargeDone = false;
+    } else if (dcBusVoltage < 20000) {
+        queue.call_in(500ms, &checkPrechargeVoltage);
+        // prechargeDone = false;
     }
 
 
@@ -428,4 +442,10 @@ void can_ChargerMaxCurrentVoltage() {
         29000, // charge current limit, mA
         15 // input AC voltage, can change to 20 if plugged into nema 5-20, nema 5-15 is standard
     ));
+}
+
+void checkPrechargeVoltage() {
+    if (dcBusVoltage < 20000) {
+        prechargeDone = false;
+    }
 }

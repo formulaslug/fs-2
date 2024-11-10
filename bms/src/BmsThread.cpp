@@ -262,7 +262,12 @@ void BMSThread::threadWorker() {
         maxVoltage >= BMS_FAULT_VOLTAGE_THRESHOLD_HIGH ||
         minTemp <= BMS_FAULT_TEMP_THRESHOLD_LOW ||
         maxTemp >= ((charging) ? BMS_FAULT_TEMP_THRESHOLD_CHARING_HIGH : BMS_FAULT_TEMP_THRESHOLD_HIGH)) {
-      throwBmsFault();
+        if (bmsState == BMSThreadState::BMSFaultRecover || bmsState == BMSThreadState::BMSFault) {
+            throwBmsFault();
+        } else {
+            bmsState = BMSThreadState::BMSFaultRecover;
+            continue;
+        }
     }
 
     if (bmsState == BMSThreadState::BMSIdle && balanceAllowed) {
@@ -331,9 +336,12 @@ void BMSThread::threadWorker() {
     } else {
         ThisThread::sleep_for(100ms); // 100 ms
     }
+    if (bmsState == BMSThreadState::BMSFaultRecover) {
+        bmsState = BMSThreadState::BMSIdle;
+    }
   }
 }
 
 void BMSThread::throwBmsFault() {
-  bmsState = BMSThreadState::BMSFault;
+    bmsState = BMSThreadState::BMSFault;
 }

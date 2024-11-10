@@ -18,7 +18,7 @@
 #define CAN_RX_PIN D10
 #define CAN_TX_PIN D2
 #define CAN_FREQ 500000
-#define MAX_TORQUE 20000
+#define MAX_TORQUE 30000
 
 // Constant tested range of values for pedal travel calculation
 const float HE1_LOW = .15;
@@ -81,7 +81,7 @@ void stopRTDS() {
     // test_led.write(false);
     RTDScontrol.write(false);
     // printf("FINISHED RTDS\n");
-    RTDSqueued = false;
+    // RTDSqueued = false;
 }
 
 void cockpit_switch_high() {
@@ -93,8 +93,8 @@ void check_start_conditions() {
     if (TS_Ready/* && brakes.read() >= BRAKE_TOL*/) {
         Motor_On = true;
         if(RTDSqueued){return;}
-        queue.call(&runRTDS);
         RTDSqueued = true;
+        queue.call(&runRTDS);
     }
 }
 
@@ -164,7 +164,7 @@ void sendState() {
     CANMessage stateMessage;
     stateMessage.id = 0x1A1;
 
-    stateMessage.data[0] = 0x00 | ((TS_Ready) | (Motor_On << 1) | (CANFlag << 2) | (RTDSqueued << 3) | (Cockpit.read() << 4));
+    stateMessage.data[0] = 0x00 | (0x01 & TS_Ready) | ((0x01 & Motor_On) << 1) | ((0x01 & CANFlag) << 2) | ((0x01 & RTDSqueued) << 3) | ((0x01 & Cockpit.read() << 4));
     stateMessage.data[1] = (int8_t)(brakes.read()*100);
     stateMessage.data[2] = (int8_t)(HE1_read*100);
     stateMessage.data[3] = (int8_t)(HE2_read*100);

@@ -41,6 +41,7 @@ void canLSS_SwitchStateGlobal();
 void canLSS_SetNodeIDGlobal();
 
 void checkPrechargeVoltage();
+void checkShutdownStatus();
 
 void can_ChargerSync();
 void can_ChargerChargeControl();
@@ -71,6 +72,9 @@ DigitalOut precharge_control_pin(ACC_PRECHARGE_CONTROL);
 AnalogIn current_vref_pin(ACC_BUFFERED_C_VREF);
 AnalogIn current_sense_pin(ACC_BUFFERED_C_OUT);
 AnalogIn glv_voltage_pin(ACC_GLV_VOLTAGE);
+
+bool checkingPrechargeStatus = false;
+bool checkingShutdownStatus = false;
 
 bool prechargeDone = false;
 bool hasBmsFault = true;
@@ -196,8 +200,9 @@ int main() {
     }
     
 
-    if (!shutdown_measure_pin) {
-        prechargeDone = false;
+    if (!shutdown_measure_pin && !checkingShutdownStatus) {
+        checkingShutdownStatus = false;
+        queue.call_in(100ms, &checkShutdownStatus);
     }
 
 
@@ -207,7 +212,8 @@ int main() {
 
     if (dcBusVoltage >= (uint16_t)(tsVoltagemV/100.0) * PRECHARGE_PERCENT && tsVoltagemV >= 60000) {
         prechargeDone = true;
-    } else if (dcBusVoltage < 20000) {
+    } else if (dcBusVoltage < 20000 && !checkingPrechargeStatus) {
+        checkingPrechargeStatus = true;
         queue.call_in(500ms, &checkPrechargeVoltage);
         // prechargeDone = false;
     }
@@ -448,4 +454,12 @@ void checkPrechargeVoltage() {
     if (dcBusVoltage < 20000) {
         prechargeDone = false;
     }
+    checkingPrechargeStatus = false;
+}
+
+void checkShutdownStatus() {
+    if (!shutdown_measure_pin) {
+        prechargeDone = false;
+    }
+    checkingShutdownStatus = false;
 }

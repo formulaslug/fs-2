@@ -99,3 +99,5 @@ DELIVERY/
 
 # clang compile commands
 compile_commands.json
+APPSETC/mbed-os/
+bms/mbed-os

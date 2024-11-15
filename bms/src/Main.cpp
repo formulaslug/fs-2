@@ -162,6 +162,7 @@ int main() {
                 break;
             case BMSThreadState::BMSFaultRecover:
                 printf("BMS Fault Recovery State\n");
+                hasBmsFault = false;
                 break;
             case BMSThreadState::BMSFault:
                 printf("*** BMS FAULT ***\n");
@@ -311,6 +312,18 @@ void initChargingCAN() {
     queue.call_every(100ms, &can_ChargerSync);
     queue.call_every(100ms, &can_ChargerMaxCurrentVoltage);
     queue.call_every(100ms, &can_ChargerChargeControl);
+
+
+    queue.call_every(100ms, &canBoardStateTX);
+    queue.call_every( 20ms, &canCurrentLimTX);
+    queue.call_every(200ms, &canVoltTX0);
+    queue.call_every(200ms, &canVoltTX1);
+    queue.call_every(200ms, &canVoltTX2);
+    queue.call_every(200ms, &canVoltTX3);
+    queue.call_every(200ms, &canTempTX0);
+    queue.call_every(200ms, &canTempTX1);
+    queue.call_every(200ms, &canTempTX2);
+    queue.call_every(200ms, &canTempTX3);
 }
 
 void canRX() {
@@ -445,8 +458,8 @@ void can_ChargerMaxCurrentVoltage() {
     canBus->write(chargerMaxAllowedVoltageCurrentRPDO(
         0x10, // destination node ID
         CHARGE_VOLTAGE*1000, // desired voltage, mV
-        29000, // charge current limit, mA
-        15 // input AC voltage, can change to 20 if plugged into nema 5-20, nema 5-15 is standard
+        10000, // charge current limit, mA
+        15 // input AC current, can change to 20 if plugged into nema 5-20, nema 5-15 is standard
     ));
 }
 

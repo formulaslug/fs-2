@@ -141,7 +141,7 @@ void BMSThread::threadWorker() {
       printf("Things are not okay. StartADC\n");
     }
 
-    ThisThread::sleep_for(5ms);
+    ThisThread::sleep_for(10ms);
 
     // Read back values from all chips
     for (int i = 0; i < BMS_BANK_COUNT; i++) {
@@ -228,16 +228,20 @@ void BMSThread::threadWorker() {
         }
       }
     }
-
+    // printf("Fuck: ");
     uint16_t minVoltage = allVoltages[0];
     uint16_t maxVoltage = 0;
     for (int i = 0; i < BMS_BANK_COUNT * BMS_BANK_CELL_COUNT; i++) {
+        // if (allVoltages[i] > BMS_FAULT_VOLTAGE_THRESHOLD_HIGH) {
+        //     printf("%d, ", i);
+        // }
       if (allVoltages[i] < minVoltage) {
         minVoltage = allVoltages[i];
       } else if (allVoltages[i] > maxVoltage) {
         maxVoltage = allVoltages[i];
       }
     }
+    // printf ("\n");
     
     int8_t minTemp = allTemps[0];
     int8_t maxTemp = 0;
@@ -262,10 +266,34 @@ void BMSThread::threadWorker() {
         maxVoltage >= BMS_FAULT_VOLTAGE_THRESHOLD_HIGH ||
         minTemp <= BMS_FAULT_TEMP_THRESHOLD_LOW ||
         maxTemp >= ((charging) ? BMS_FAULT_TEMP_THRESHOLD_CHARING_HIGH : BMS_FAULT_TEMP_THRESHOLD_HIGH)) {
+        
+        if (minVoltage <= BMS_FAULT_VOLTAGE_THRESHOLD_LOW) {
+            printf("Voltage too low: %d\n", minVoltage);
+        }
+        if (maxVoltage >= BMS_FAULT_VOLTAGE_THRESHOLD_HIGH) {
+            printf("Voltage too high: %d\n", maxVoltage);
+            printf("Voltages: ");
+            for (int l = 0; l < BMS_BANK_COUNT * BMS_BANK_CELL_COUNT; l++) {
+                printf("%d, ", allVoltages[l]);
+            }
+            printf("\n");
+        }
+        if (minTemp <= BMS_FAULT_TEMP_THRESHOLD_LOW) {
+            printf("Temp too low: %d\n", minTemp);
+        }
+        if (maxTemp >= ((charging) ? BMS_FAULT_TEMP_THRESHOLD_CHARING_HIGH : BMS_FAULT_TEMP_THRESHOLD_HIGH)) {
+            printf("Temp too high: %d\n", maxTemp);
+        }
+
+
+
         if (bmsState == BMSThreadState::BMSFaultRecover || bmsState == BMSThreadState::BMSFault) {
+            printf("FAULT STATE\n");
             throwBmsFault();
         } else {
+            printf("ENTERING FAULT RECOVERY\n");
             bmsState = BMSThreadState::BMSFaultRecover;
+            ThisThread::sleep_for(10ms);
             continue;
         }
     }

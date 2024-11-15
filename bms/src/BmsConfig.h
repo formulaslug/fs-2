@@ -64,7 +64,7 @@ extern DigitalOut* chargerControl;
 //
 // Units: millivolts
 #ifndef BMS_FAULT_VOLTAGE_THRESHOLD_LOW
-#define BMS_FAULT_VOLTAGE_THRESHOLD_LOW 2800
+#define BMS_FAULT_VOLTAGE_THRESHOLD_LOW 2650
 #endif
 
 // Threshold when cells will be discharged when discharging is enabled.
@@ -103,7 +103,7 @@ extern DigitalOut* chargerControl;
 
 // voltage to charge to
 #ifndef CHARGE_VOLTAGE
-#define CHARGE_VOLTAGE 115
+#define CHARGE_VOLTAGE 112
 #endif
 
 

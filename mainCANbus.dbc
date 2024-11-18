@@ -205,7 +205,30 @@ BO_ 417 TPDO_ETC_BOARD_State: 8 Vector__XXX
 
 BO_ 128 Sync: 0 Vector__XXX
 
-BO_ 1 TPDO_TELEM_STEERBRAKE: 8 Vector__XXX
+BO_ 420 TPDO_TELEM_STEERBRAKE: 6 Vector__XXX
+ SG_ TELEM_STEERBRAKE_STEER : 0|16@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ TELEM_STEERBRAKE_BRAKER : 16|16@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ TELEM_STEERBRAKE_BRAKEF : 32|8@1+ (1,0) [0|0] "" Vector__XXX
+
+BO_ 548 TPDO_TELEM_FR: 6 Vector__XXX
+ SG_ TELEM_FR_SUSTRAVEL : 0|16@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ TELEM_FR_STRAIN : 16|16@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ TELEM_FR_WHEELSPEED : 32|16@1+ (1,0) [0|0] "" Vector__XXX
+
+BO_ 676 TPDO_TELEM_FL: 6 Vector__XXX
+ SG_ TELEM_FL_SUSTRAVEL : 0|16@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ TELEM_FL_STRAIN : 16|16@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ TELEM_FL_WHEELSPEED : 32|16@1+ (1,0) [0|0] "" Vector__XXX
+
+BO_ 804 TPDO_TELEM_BR: 6 Vector__XXX
+ SG_ TELEM_BR_SUSTRAVEL : 0|16@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ TELEM_BR_STRAIN : 16|16@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ TELEM_BR_WHEELSPEED : 32|16@1+ (1,0) [0|0] "" Vector__XXX
+
+BO_ 932 TPDO_TELEM_BL: 6 Vector__XXX
+ SG_ TELEM_BL_SUSTRAVEL : 0|16@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ TELEM_BL_STRAIN : 16|16@1+ (1,0) [0|0] "" Vector__XXX
+ SG_ TELEM_BL_WHEELSPEED : 32|16@1+ (1,0) [0|0] "" Vector__XXX
 
 
 

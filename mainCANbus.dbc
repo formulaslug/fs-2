@@ -205,6 +205,8 @@ BO_ 417 TPDO_ETC_BOARD_State: 8 Vector__XXX
 
 BO_ 128 Sync: 0 Vector__XXX
 
+BO_ 1 TPDO_TELEM_STEERBRAKE: 8 Vector__XXX
+
 
 
 CM_ SG_ 387 BMS_Fault "Fault High";

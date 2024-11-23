@@ -39,6 +39,9 @@ bool Motor_On = false;
 bool CANFlag = false;
 bool RTDSqueued = false;
 
+bool cockpitSwitchHighQueued = false;
+bool cockpitSwitchLowQueued = false;
+
 void initIO();
 void canRX();
 void sendSync();
@@ -85,11 +88,17 @@ void stopRTDS() {
 }
 
 void cockpit_switch_high() {
-    queue.call_in(10ms, &check_start_conditions);
+    if (!cockpitSwitchHighQueued) {
+        cockpitSwitchHighQueued = true;
+        queue.call_in(10ms, &check_start_conditions);
+    }
 }
 
 void check_start_conditions() {
-    if(Cockpit.read() == 0) {return;}
+    cockpitSwitchHighQueued = false;
+    if(Cockpit.read() == 0) {
+        return;
+    }
     if (TS_Ready/* && brakes.read() >= BRAKE_TOL*/) {
         Motor_On = true;
         if(RTDSqueued){return;}
@@ -99,10 +108,14 @@ void check_start_conditions() {
 }
 
 void cockpit_switch_low() {
-    queue.call_in(10ms, &check_switch_low);
+    if (!cockpitSwitchLowQueued) {
+        cockpitSwitchLowQueued = true;
+        queue.call_in(10ms, &check_switch_low);
+    }
 }
 
 void check_switch_low() {
+    cockpitSwitchLowQueued = false;
     if(Cockpit.read() == 1) {return;}
     Motor_On = false;
 }

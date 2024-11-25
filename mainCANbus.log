@@ -43,3 +43,28 @@ MSG_ID: 417 	MSG_TYPE: S 	MSG_NAME: TPDO_ETC_BOARD_State
 	SIG_NAME: UNUSED_B, STATUS: Invalid Max or Min value., ACTION: Value Set to default
 	SIG_NAME: UNUSED_C, STATUS: Invalid Max or Min value., ACTION: Value Set to default
 	SIG_NAME: UNUSED_CHAR, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 420 	MSG_TYPE: S 	MSG_NAME: TPDO_TELEM_STEERBRAKE
+	SIG_NAME: TELEM_STEERBRAKE_STEER, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: TELEM_STEERBRAKE_BRAKER, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: TELEM_STEERBRAKE_BRAKEF, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 548 	MSG_TYPE: S 	MSG_NAME: TPDO_TELEM_FR
+	SIG_NAME: TELEM_FR_SUSTRAVEL, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: TELEM_FR_STRAIN, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: TELEM_FR_WHEELSPEED, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 676 	MSG_TYPE: S 	MSG_NAME: TPDO_TELEM_FL
+	SIG_NAME: TELEM_FL_SUSTRAVEL, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: TELEM_FL_STRAIN, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: TELEM_FL_WHEELSPEED, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 804 	MSG_TYPE: S 	MSG_NAME: TPDO_TELEM_BR
+	SIG_NAME: TELEM_BR_SUSTRAVEL, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: TELEM_BR_STRAIN, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: TELEM_BR_WHEELSPEED, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+
+MSG_ID: 932 	MSG_TYPE: S 	MSG_NAME: TPDO_TELEM_BL
+	SIG_NAME: TELEM_BL_SUSTRAVEL, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: TELEM_BL_STRAIN, STATUS: Invalid Max or Min value., ACTION: Value Set to default
+	SIG_NAME: TELEM_BL_WHEELSPEED, STATUS: Invalid Max or Min value., ACTION: Value Set to default

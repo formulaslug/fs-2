@@ -21,7 +21,7 @@
 #define MAX_TORQUE 30000
 
 // Constant tested range of values for pedal travel calculation
-const float HE1_LOW = .15;
+const float HE1_LOW = .17;
 const float HE1_HIGH = .73;
 const float HE2_LOW = .14;
 const float HE2_HIGH = .57;

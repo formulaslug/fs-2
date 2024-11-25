@@ -63,6 +63,7 @@ void send()
     steerBrake.data[4] = tData.brakeSensorF;
     steerBrake.data[5] = tData.brakeSensorF >> 8;
     canBus->write(steerBrake);
+    ThisThread::sleep_for(1ms);
 
     CANMessage FR;
     FR.id = 0x224;
@@ -74,6 +75,7 @@ void send()
     FR.data[4] = tData.wheelSpeedFR;
     FR.data[5] = tData.wheelSpeedFR >> 8;
     canBus->write(FR);
+    ThisThread::sleep_for(1ms);
 
     CANMessage FL;
     FL.id = 0x2A4;
@@ -85,6 +87,7 @@ void send()
     FL.data[4] = tData.wheelSpeedFL;
     FL.data[5] = tData.wheelSpeedFL >> 8;
     canBus->write(FL);
+    ThisThread::sleep_for(1ms);
 
     CANMessage BR;
     BR.id = 0x324;
@@ -96,6 +99,7 @@ void send()
     BR.data[4] = tData.wheelSpeedBR;
     BR.data[5] = tData.wheelSpeedBR >> 8;
     canBus->write(BR);
+    ThisThread::sleep_for(1ms);
 
     CANMessage BL;
     BL.id = 0x3A4;
@@ -107,6 +111,7 @@ void send()
     BL.data[4] = tData.wheelSpeedBL;
     BL.data[5] = tData.wheelSpeedBL >> 8;
     canBus->write(BL);
+    ThisThread::sleep_for(1ms);
 }
 
 

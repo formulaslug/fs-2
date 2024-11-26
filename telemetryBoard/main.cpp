@@ -155,7 +155,7 @@ int main(int, char**) {
                     tData.strainFL = mp.read_u16();
                     break;
                 case 8:
-                    tData.wheelSpeedBL = mp.read_u16();
+                    tData.wheelSpeedFL = mp.read_u16();
                     break;
                 case 9:
                     tData.shockPositionBR = mp.read_u16();

@@ -29,7 +29,7 @@ const float HE2_HIGH = .57;
 AnalogIn HE1(A1);
 AnalogIn HE2(A0);
 AnalogIn brakes(A2);
-InterruptIn Cockpit(D9);
+DigitalIn Cockpit(D9);
 DigitalOut RTDScontrol(D6);
 DigitalOut test_led(LED1);
 CAN* canBus;
@@ -38,6 +38,8 @@ bool TS_Ready = false;
 bool Motor_On = false;
 bool CANFlag = false;
 bool RTDSqueued = false;
+
+bool cockpitSwitch = false;
 
 bool cockpitSwitchHighQueued = false;
 bool cockpitSwitchLowQueued = false;
@@ -87,36 +89,38 @@ void stopRTDS() {
     // RTDSqueued = false;
 }
 
-void cockpit_switch_high() {
-    if (!cockpitSwitchHighQueued) {
-        cockpitSwitchHighQueued = true;
-        queue.call_in(10ms, &check_start_conditions);
-    }
-}
+// void cockpit_switch_high() {
+//     if (!cockpitSwitchHighQueued) {
+//         cockpitSwitchHighQueued = true;
+//         queue.call_in(10ms, &check_start_conditions);
+//     }
+// }
 
 void check_start_conditions() {
     cockpitSwitchHighQueued = false;
-    if(Cockpit.read() == 0) {
+    if(!Cockpit.read()) {
         return;
     }
-    if (TS_Ready/* && brakes.read() >= BRAKE_TOL*/) {
-        Motor_On = true;
-        if(RTDSqueued){return;}
-        RTDSqueued = true;
-        queue.call(&runRTDS);
-    }
+    cockpitSwitch = true;
+    // if (TS_Ready/* && brakes.read() >= BRAKE_TOL*/) {
+    //     Motor_On = true;
+    //     if(RTDSqueued){return;}
+    //     RTDSqueued = true;
+    //     queue.call(&runRTDS);
+    // }
 }
 
-void cockpit_switch_low() {
-    if (!cockpitSwitchLowQueued) {
-        cockpitSwitchLowQueued = true;
-        queue.call_in(10ms, &check_switch_low);
-    }
-}
+// void cockpit_switch_low() {
+//     if (!cockpitSwitchLowQueued) {
+//         cockpitSwitchLowQueued = true;
+//         queue.call_in(10ms, &check_switch_low);
+//     }
+// }
 
 void check_switch_low() {
     cockpitSwitchLowQueued = false;
-    if(Cockpit.read() == 1) {return;}
+    if(Cockpit.read()) {return;}
+    cockpitSwitch = false;
     Motor_On = false;
 }
 
@@ -140,6 +144,7 @@ void sendSync() {
     unsigned char data[0];
     CANMessage syncMessage(0x80, data, 0);
     canBus->write(syncMessage);
+    ThisThread::sleep_for(1ms);
 }
 
 void sendThrottle() {
@@ -159,6 +164,7 @@ void sendThrottle() {
     throttleMessage.data[7] = 0x00;
 
     canBus->write(throttleMessage);
+    ThisThread::sleep_for(1ms);
 }
 
 void sendState() {
@@ -177,7 +183,7 @@ void sendState() {
     CANMessage stateMessage;
     stateMessage.id = 0x1A1;
 
-    stateMessage.data[0] = 0x00 | (0x01 & TS_Ready) | ((0x01 & Motor_On) << 1) | ((0x01 & CANFlag) << 2) | ((0x01 & RTDSqueued) << 3) | ((0x01 & Cockpit.read() << 4));
+    stateMessage.data[0] = 0x00 | (0x01 & TS_Ready) | ((0x01 & Motor_On) << 1) | ((0x01 & CANFlag) << 2) | ((0x01 & RTDSqueued) << 3) | ((0x01 & cockpitSwitch << 4));
     stateMessage.data[1] = (int8_t)(brakes.read()*100);
     stateMessage.data[2] = (int8_t)(HE1_read*100);
     stateMessage.data[3] = (int8_t)(HE2_read*100);
@@ -187,6 +193,7 @@ void sendState() {
     stateMessage.data[7] = 0x00;
     
     canBus->write(stateMessage);
+    ThisThread::sleep_for(1ms);
 }
 
 void printStatusMessage() {
@@ -250,6 +257,17 @@ int main()
 
     while(1) {
         // printf("loop\n");
+
+        if (!cockpitSwitchHighQueued && !cockpitSwitchLowQueued) {
+            if (Cockpit.read() && !cockpitSwitch) {
+                cockpitSwitchHighQueued = true;
+                queue.call_in(10ms, &check_start_conditions);
+            } else if (!Cockpit.read() && cockpitSwitch) {
+                cockpitSwitchLowQueued = true;
+                queue.call_in(10ms, &check_switch_low);
+            }
+        }
+
         if(CANFlag) {
             CANMessage msg;
             CANFlag = false;
@@ -298,10 +316,24 @@ int main()
             // printStatusMessage();
         }
 
+        if (cockpitSwitch) {
+            if (TS_Ready/* && brakes.read() >= BRAKE_TOL*/) {
+                Motor_On = true;
+                if(!RTDSqueued){
+                    RTDSqueued = true;
+                    queue.call(&runRTDS);
+                }
+            }
+        } else {
+            Motor_On = false;
+            RTDSqueued = false;
+        }
+
         queue.dispatch_once();
         ThisThread::sleep_for(1ms);
+        
     }
-
+    
 }
 
 void initIO() {
@@ -316,8 +348,8 @@ void initIO() {
     
     // printf("Waiting for start conditions!\n");
 
-    Cockpit.rise(&cockpit_switch_high);
+    // Cockpit.rise(&cockpit_switch_high);
 
     // Event for closing motor
-    Cockpit.fall(&cockpit_switch_low);
+    // Cockpit.fall(&cockpit_switch_low);
 }

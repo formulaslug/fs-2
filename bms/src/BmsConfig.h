@@ -106,6 +106,16 @@ extern DigitalOut* chargerControl;
 #define CHARGE_VOLTAGE 112
 #endif
 
+// AC wall charging current in A, 12 for NEMA 5-15
+#ifndef CHARGE_AC_LIMIT
+#define CHARGE_AC_LIMIT 12
+#endif
+
+// Charge current, in mA
+#ifndef CHARGE_DC_LIMIT
+#define CHARGE_DC_LIMIT 15000
+#endif
+
 
 // BMS Cell lookup
 //

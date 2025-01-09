@@ -21,7 +21,7 @@ void initIO();
 void initDrivingCAN();
 void initChargingCAN();
 
-void canRX();
+// void canRX();
 
 void canBootupTX();
 void canBoardStateTX();
@@ -97,6 +97,7 @@ int8_t avgCellTemp; // in c
 int8_t maxCellTemp; // in c
 
 int main() {
+  osThreadSetPriority(osThreadGetId(), osPriorityHigh7);
 
   printf("main\n");
   initIO();
@@ -117,8 +118,8 @@ int main() {
   Thread bmsThreadThread;
   BMSThread bmsThread(ltcBus, 1, bmsMailbox, mainToBMSMailbox);
   bmsThreadThread.start(callback(&BMSThread::startThread, &bmsThread));
-
-  osThreadSetPriority(osThreadGetId(), osPriorityHigh7);
+  printf("BMS thread started\n");
+  
   Timer t;
   t.start();
   while (1) {
@@ -173,6 +174,11 @@ int main() {
                 break;
         }
         delete bmsEvent;
+    }
+
+    CANMessage readmsg;
+    if (canBus->read(readmsg)) {
+        canqueue.push(readmsg);
     }
 
     while (!canqueue.empty()) {
@@ -255,7 +261,7 @@ int main() {
     // printf("Error Rx %d - tx %d\n", canBus->rderror(),canBus->tderror());
 
     queue.dispatch_once();
-    ThisThread::sleep_for(10 - (t.read_ms()%10));
+    ThisThread::sleep_for(5 - (t.read_ms()%5));
   }
 }
 
@@ -268,7 +274,7 @@ void initIO() {
     canBus = new CAN(BMS_PIN_CAN_RX, BMS_PIN_CAN_TX, BMS_CAN_FREQUENCY);
     // canBus->frequency(BMS_CAN_FREQUENCY);
     // canBus->reset();
-    canBus->attach(canRX);
+    // canBus->attach(canRX);
 
     queue.call(&canBootupTX);
     queue.dispatch_once();
@@ -326,13 +332,13 @@ void initChargingCAN() {
     queue.call_every(200ms, &canTempTX3);
 }
 
-void canRX() {
-    CANMessage msg;
+// void canRX() {
+//     CANMessage msg;
     
-    if (canBus->read(msg)) {
-        canqueue.push(msg);
-    }
-}
+//     if (canBus->read(msg)) {
+//         canqueue.push(msg);
+//     }
+// }
 
 void canBootupTX() {
     canBus->write(accBoardBootup());
@@ -458,8 +464,8 @@ void can_ChargerMaxCurrentVoltage() {
     canBus->write(chargerMaxAllowedVoltageCurrentRPDO(
         0x10, // destination node ID
         CHARGE_VOLTAGE*1000, // desired voltage, mV
-        10000, // charge current limit, mA
-        15 // input AC current, can change to 20 if plugged into nema 5-20, nema 5-15 is standard
+        CHARGE_DC_LIMIT, // charge current limit, mA
+        CHARGE_AC_LIMIT // input AC current, can change to 20 if plugged into nema 5-20, nema 5-15 is standard
     ));
 }
 

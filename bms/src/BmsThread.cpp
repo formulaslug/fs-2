@@ -32,6 +32,7 @@ void BMSThread::threadWorker() {
       StartSelfTestCellVoltage(AdcMode::k7k, SelfTestMode::kSelfTest1)));
   ThisThread::sleep_for(4ms);
   m_bus.WakeupBus();
+  printf("BMS A\n");
   for (int i = 0; i < BMS_BANK_COUNT; i++) {
     uint16_t rawVoltages[12];
 
@@ -60,6 +61,7 @@ void BMSThread::threadWorker() {
       printf("AXST %2d: %4x\n", j, rawVoltages[i]);
     }
   }
+  printf("BMS B\n");
 
   // Cell GPIO self test
   m_bus.WakeupBus();
